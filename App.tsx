@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import HanulKeyboard from './src/components/HanulKeyboard';
 import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateManager';
 
 export default function App(props: any) {
   // Check both props and possible nested props if wrapped by registerRootComponent
-  const isIME = props.isIME || (props.exp && props.exp.initialProps && props.exp.initialProps.isIME) || false;
+  const isIME = props?.isIME || (props?.exp && props?.exp?.initialProps && props?.exp?.initialProps?.isIME) || false;
   
   const [displayText, setDisplayText] = useState('');
   const [mode, setMode] = useState<KeyboardMode>('ko');
@@ -27,8 +27,7 @@ export default function App(props: any) {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isIME && styles.imeContainer]}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, isIME && styles.imeContainer]}>
       {!isIME ? (
         <View style={styles.displayArea}>
           <Text style={styles.displayText} numberOfLines={10}>
@@ -44,7 +43,7 @@ export default function App(props: any) {
           onModeChange={toggleMode}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

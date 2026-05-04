@@ -22,8 +22,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.kimys7512.hanulkeyboard"
+      "package": "com.hanulkeyboard"
     },
+    "plugins": [
+      "./plugins/withHanulIME.js"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
