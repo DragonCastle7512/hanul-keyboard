@@ -107,14 +107,18 @@ export class KeyboardStateManager {
 
   private syncToIME(oldComposing: string) {
     if (!IMEModule) return;
-    if (oldComposing.length > 0) {
-        for (let i = 0; i < oldComposing.length; i++) {
-            IMEModule.deleteBackward();
-        }
-    }
     const newComposing = assembleHangeul(this.composingJamos);
-    if (newComposing.length > 0) {
+    if (newComposing.length > 0 && typeof IMEModule.setComposingText === 'function') {
+        IMEModule.setComposingText(newComposing);
+    } else if (newComposing.length > 0) {
+        if (oldComposing.length > 0) {
+            for (let i = 0; i < oldComposing.length; i++) {
+                IMEModule.deleteBackward();
+            }
+        }
         IMEModule.commitText(newComposing);
+    } else if (typeof IMEModule.finishComposingText === 'function') {
+        IMEModule.finishComposingText();
     }
   }
 
@@ -137,7 +141,9 @@ export class KeyboardStateManager {
   private finalize() {
     if (this.composingJamos.length > 0) {
       const composed = assembleHangeul(this.composingJamos);
-      if (!this.isIME) {
+      if (this.isIME && IMEModule && typeof IMEModule.finishComposingText === 'function') {
+          IMEModule.finishComposingText();
+      } else if (!this.isIME) {
           this.fullText += composed;
       }
       this.composingJamos = [];

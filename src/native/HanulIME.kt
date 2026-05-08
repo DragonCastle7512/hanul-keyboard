@@ -105,6 +105,16 @@ class HanulIME : InputMethodService() {
         ic?.commitText(text, 1)
     }
 
+    fun setComposingText(text: String) {
+        val ic = currentInputConnection
+        ic?.setComposingText(text, 1)
+    }
+
+    fun finishComposingText() {
+        val ic = currentInputConnection
+        ic?.finishComposingText()
+    }
+
     fun deleteText() {
         val ic = currentInputConnection
         ic?.deleteSurroundingText(1, 0)
@@ -123,6 +133,16 @@ class IMEModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaMod
     @ReactMethod
     fun commitText(text: String) {
         HanulIME.currentInstance?.sendText(text)
+    }
+
+    @ReactMethod
+    fun setComposingText(text: String) {
+        HanulIME.currentInstance?.setComposingText(text)
+    }
+
+    @ReactMethod
+    fun finishComposingText() {
+        HanulIME.currentInstance?.finishComposingText()
     }
 
     @ReactMethod
