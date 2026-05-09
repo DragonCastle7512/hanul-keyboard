@@ -9,7 +9,7 @@ export const consonantCycles: { [key: string]: string[] } = {
   'ㅈㅊ': ['ㅈ', 'ㅊ', 'ㅉ'],
   'ㅇㅁ': ['ㅇ', 'ㅁ'],
   '.,': ['.', ','],
-  '::;': [':', ';'],
+  ':;': [':', ';'],
   '?!': ['?', '!'],
   '^~': ['^', '~'],
   '@/': ['@', '/'],
@@ -53,44 +53,41 @@ export function assembleHangeul(jamos: string[]): string {
 
 function processVowels(jamos: string[]): string[] {
   const result: string[] = [];
+  const isCheonjiinVowel = (char: string) => char === 'ㅣ' || char === '·' || char === 'ㅡ';
+  const toCode = (char: string) => (char === 'ㅣ' ? '1' : char === '·' ? '2' : '3');
   let i = 0;
+
   while (i < jamos.length) {
     const char = jamos[i];
-    if (char === 'ㅣ' || char === '·' || char === 'ㅡ') {
-      let sequence = '';
+    if (isCheonjiinVowel(char)) {
       let j = i;
-      while (j < jamos.length && (jamos[j] === 'ㅣ' || jamos[j] === '·' || jamos[j] === 'ㅡ')) {
-        const val = jamos[j] === 'ㅣ' ? '1' : jamos[j] === '·' ? '2' : '3';
-        sequence += val;
-        
-        // Try to find the longest matching sequence
-        if (vowelSequences[sequence]) {
-           // We'll peek ahead to see if there's a longer match
-           let nextSeq = sequence;
-           let k = j + 1;
-           let foundLonger = false;
-           while (k < jamos.length && (jamos[k] === 'ㅣ' || jamos[k] === '·' || jamos[k] === 'ㅡ')) {
-             nextSeq += jamos[k] === 'ㅣ' ? '1' : jamos[k] === '·' ? '2' : '3';
-             if (vowelSequences[nextSeq]) {
-               sequence = nextSeq;
-               j = k;
-               foundLonger = true;
-             } else {
-               break;
-             }
-             k++;
-           }
-           result.push(vowelSequences[sequence]);
-           i = j + 1;
-           break;
-        }
+      let runCode = '';
+      while (j < jamos.length && isCheonjiinVowel(jamos[j])) {
+        runCode += toCode(jamos[j]);
         j++;
       }
-      if (i <= j && !vowelSequences[sequence]) {
-          // If no sequence found, just push what we have
-          result.push(char);
-          i++;
+
+      let cursor = 0;
+      while (cursor < runCode.length) {
+        let matched = false;
+        for (let len = runCode.length - cursor; len > 0; len--) {
+          const candidate = runCode.slice(cursor, cursor + len);
+          const mapped = vowelSequences[candidate];
+          if (mapped) {
+            result.push(mapped);
+            cursor += len;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          const fallbackChar = runCode[cursor] === '1' ? 'ㅣ' : runCode[cursor] === '2' ? '·' : 'ㅡ';
+          result.push(fallbackChar);
+          cursor += 1;
+        }
       }
+
+      i = j;
     } else {
       result.push(char);
       i++;

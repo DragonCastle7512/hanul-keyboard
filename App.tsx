@@ -6,6 +6,11 @@ import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateMan
 export default function App(props: any) {
   // Check both props and possible nested props if wrapped by registerRootComponent
   const isIME = props?.isIME || (props?.exp && props?.exp?.initialProps && props?.exp?.initialProps?.isIME) || false;
+  const bottomInset = Number(
+    props?.bottomInset ??
+    props?.exp?.initialProps?.bottomInset ??
+    0
+  );
   
   const [displayText, setDisplayText] = useState('');
   const [mode, setMode] = useState<KeyboardMode>('ko');
@@ -36,7 +41,16 @@ export default function App(props: any) {
           </Text>
         </View>
       ) : null}
-      <View style={isIME ? styles.imeKeyboardWrapper : null}>
+      <View
+        style={
+          isIME
+            ? [
+                styles.imeKeyboardWrapper,
+                { height: 300 + bottomInset, paddingBottom: bottomInset },
+              ]
+            : null
+        }
+      >
         <HanulKeyboard 
           onPress={handleKeyPress} 
           mode={mode}
@@ -59,6 +73,7 @@ const styles = StyleSheet.create({
   imeKeyboardWrapper: {
     height: 300,
     justifyContent: 'flex-end',
+    backgroundColor: '#1a1a1a',
   },
   displayArea: {
     flex: 1,

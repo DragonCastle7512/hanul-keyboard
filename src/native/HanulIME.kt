@@ -29,6 +29,18 @@ class HanulIME : InputMethodService() {
     private var mReactRootView: ReactRootView? = null
     private var mReactInstanceManager: ReactInstanceManager? = null
 
+    private fun getNavigationBarHeightPx(): Int {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (resourceId <= 0) return 0
+        return resources.getDimensionPixelSize(resourceId)
+    }
+
+    private fun getNavigationBarHeightDp(): Double {
+        val heightPx = getNavigationBarHeightPx().toDouble()
+        val density = resources.displayMetrics.density.toDouble().coerceAtLeast(1.0)
+        return heightPx / density
+    }
+
     override fun onCreate() {
         super.onCreate()
         currentInstance = this
@@ -48,10 +60,11 @@ class HanulIME : InputMethodService() {
         val heightInDp = 300
         val scale = resources.displayMetrics.density
         val heightInPx = (heightInDp * scale + 0.5f).toInt()
+        val navigationBarHeightPx = getNavigationBarHeightPx()
 
         mContainer?.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            heightInPx
+            heightInPx + navigationBarHeightPx
         )
 
         try {
@@ -59,6 +72,7 @@ class HanulIME : InputMethodService() {
                 mReactRootView = ReactRootView(this)
                 val initialProps = Bundle()
                 initialProps.putBoolean("isIME", true)
+                initialProps.putDouble("bottomInset", getNavigationBarHeightDp())
 
                 // Ensure engine is ready
                 mReactInstanceManager?.onHostResume(null)
@@ -80,6 +94,25 @@ class HanulIME : InputMethodService() {
         }
 
         return mContainer!!
+    }
+
+    override fun onComputeInsets(outInsets: Insets) {
+        super.onComputeInsets(outInsets)
+        val inputView = mContainer
+        if (inputView == null) {
+            outInsets.contentTopInsets = 0
+            outInsets.visibleTopInsets = 0
+            outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
+            return
+        }
+
+        val location = IntArray(2)
+        inputView.getLocationInWindow(location)
+        val topInset = location[1].coerceAtLeast(0)
+
+        outInsets.contentTopInsets = topInset
+        outInsets.visibleTopInsets = topInset
+        outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {

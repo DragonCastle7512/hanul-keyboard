@@ -38,8 +38,8 @@ export class KeyboardStateManager {
   }
 
   private handleKorean(button: string, isSameButton: boolean) {
-    const isConsonant = consonantCycles[button] && !['.,', '::;', '?!', '^~', '@/'].includes(button);
-    const isSymbol = ['.,', '::;', '?!', '^~', '@/'].includes(button);
+    const isConsonant = consonantCycles[button] && !['.,', ':;', '?!', '^~', '@/'].includes(button);
+    const isSymbol = ['.,', ':;', '?!', '^~', '@/'].includes(button);
 
     if (isConsonant) {
       const cycle = consonantCycles[button];

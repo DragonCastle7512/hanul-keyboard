@@ -43,7 +43,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
         {renderButton('ㄱ ㅋ', 'ㄱㅋ')}
         {renderButton('ㄴ ㄹ', 'ㄴㄹ')}
         {renderButton('ㄷ ㅌ', 'ㄷㅌ')}
-        {renderButton(':: ;', '::;')}
+        {renderButton(': ;', ':;')}
       </View>
 
       {/* Row 3 */}
