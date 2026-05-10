@@ -46,7 +46,7 @@ export default function App(props: any) {
           isIME
             ? [
                 styles.imeKeyboardWrapper,
-                { height: 300 + bottomInset, paddingBottom: bottomInset },
+                { height: 350 + bottomInset, paddingBottom: bottomInset },
               ]
             : null
         }

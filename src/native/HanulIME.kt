@@ -57,14 +57,9 @@ class HanulIME : InputMethodService() {
         mContainer = FrameLayout(this)
         mContainer?.setBackgroundColor(Color.TRANSPARENT)
 
-        val heightInDp = 300
-        val scale = resources.displayMetrics.density
-        val heightInPx = (heightInDp * scale + 0.5f).toInt()
-        val navigationBarHeightPx = getNavigationBarHeightPx()
-
         mContainer?.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            heightInPx + navigationBarHeightPx
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
 
         try {
@@ -98,20 +93,20 @@ class HanulIME : InputMethodService() {
 
     override fun onComputeInsets(outInsets: Insets) {
         super.onComputeInsets(outInsets)
-        val inputView = mContainer
-        if (inputView == null) {
-            outInsets.contentTopInsets = 0
-            outInsets.visibleTopInsets = 0
-            outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
-            return
-        }
+        val inputView = mContainer ?: return
+        
+        val totalHeight = inputView.height
+        if (totalHeight <= 0) return
 
-        val location = IntArray(2)
-        inputView.getLocationInWindow(location)
-        val topInset = location[1].coerceAtLeast(0)
+        val scale = resources.displayMetrics.density
+        val keyboardHeightPx = (350 * scale + 0.5f).toInt()
+        val navigationBarHeightPx = getNavigationBarHeightPx()
+        val totalKeyboardHeightPx = keyboardHeightPx + navigationBarHeightPx
+        
+        val top = (totalHeight - totalKeyboardHeightPx).coerceAtLeast(0)
 
-        outInsets.contentTopInsets = topInset
-        outInsets.visibleTopInsets = topInset
+        outInsets.contentTopInsets = top
+        outInsets.visibleTopInsets = top
         outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
     }
 

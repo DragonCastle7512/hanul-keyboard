@@ -29,7 +29,11 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
   );
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container}
+      onStartShouldSetResponder={() => true}
+      onResponderTerminationRequest={() => false}
+    >
       {/* Row 1 */}
       <View style={styles.row}>
         {renderButton('ㅣ', 'ㅣ')}
