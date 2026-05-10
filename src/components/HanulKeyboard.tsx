@@ -35,7 +35,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
         {renderButton('ㅣ', 'ㅣ')}
         {renderButton('·', '·')}
         {renderButton('ㅡ', 'ㅡ')}
-        {renderButton('.,', '.,')}
+        {renderButton('. ,', '.,')}
       </View>
 
       {/* Row 2 */}
@@ -58,11 +58,11 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
       <View style={styles.row}>
         <View style={[styles.splitButtonContainer, { flex: 1 }]}>
           <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Left')}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <Ionicons name="arrow-back" size={22} color="white" />
           </TouchableOpacity>
           <View style={styles.separator} />
           <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Right')}>
-            <Ionicons name="arrow-forward" size={24} color="white" />
+            <Ionicons name="arrow-forward" size={22} color="white" />
           </TouchableOpacity>
         </View>
         {renderButton('ㅇ ㅁ', 'ㅇㅁ')}
@@ -111,6 +111,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     fontWeight: '600',
+    includeFontPadding: false, 
+    textAlignVertical: 'center',
+    textAlign: 'center',
+    width: '100%',
   },
   specialButton: {
     backgroundColor: '#444',
