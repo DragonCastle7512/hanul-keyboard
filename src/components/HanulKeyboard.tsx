@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface HanulKeyboardProps {
   onPress: (key: string) => void;
@@ -8,25 +8,139 @@ interface HanulKeyboardProps {
   onModeChange: () => void;
 }
 
-const { width } = Dimensions.get('window');
-const BUTTON_MARGIN = 4;
-const BUTTON_WIDTH = (width - BUTTON_MARGIN * 10) / 4;
+const BUTTON_MARGIN = 2;
 const BUTTON_HEIGHT = 60;
 
 const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChange }) => {
-  const renderButton = (label: string, value: string, flex = 1, icon?: any) => (
+  const [isShifted, setIsShifted] = useState(false);
+
+  const renderButton = (label: React.ReactNode, value: string, flex = 1, style?: any, key?: string) => (
     <TouchableOpacity
-      style={[styles.button, { flex }]}
-      onPress={() => onPress(value)}
+      key={key}
+      style={[styles.button, { flex }, style]}
+      onPress={() => {
+        if (value === 'Shift') {
+          setIsShifted(!isShifted);
+        } else {
+          onPress(value);
+        }
+      }}
       activeOpacity={0.7}
     >
-      {icon ? (
-        icon
+      {typeof label === 'string' ? (
+        <Text style={[styles.buttonText, mode === 'en' && { fontSize: 22 }]}>{label}</Text>
       ) : (
-        <Text style={styles.buttonText}>{label}</Text>
+        label
       )}
     </TouchableOpacity>
   );
+
+  const renderBottomRow = () => (
+    <View style={styles.row}>
+      <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
+        <Text style={styles.specialButtonText}>가A0</Text>
+      </TouchableOpacity>
+      {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color="white" />, 'Space', 1)}
+      {renderButton(<MaterialCommunityIcons name="arrow-up-bold-outline" size={22} color="white" />, 'Shift', 1)}
+      {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color="white" />, 'Enter', 1)}
+      {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color="white" />, 'Backspace', 1)}
+    </View>
+  );
+
+  const renderKoreanLayout = () => (
+    <>
+      <View style={styles.row}>
+        {renderButton('ㅣ', 'ㅣ')}
+        {renderButton('·', '·')}
+        {renderButton('ㅡ', 'ㅡ')}
+        {renderButton('. ,', '.,')}
+      </View>
+      <View style={styles.row}>
+        {renderButton('ㄱ ㅋ', 'ㄱㅋ')}
+        {renderButton('ㄴ ㄹ', 'ㄴㄹ')}
+        {renderButton('ㄷ ㅌ', 'ㄷㅌ')}
+        {renderButton(': ;', ':;')}
+      </View>
+      <View style={styles.row}>
+        {renderButton('ㅂ ㅍ', 'ㅂㅍ')}
+        {renderButton('ㅅ ㅎ', 'ㅅㅎ')}
+        {renderButton('ㅈ ㅊ', 'ㅈㅊ')}
+        {renderButton('? !', '?!')}
+      </View>
+      <View style={styles.row}>
+        <View style={[styles.splitButtonContainer, { flex: 1 }]}>
+          <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Left')}>
+            <MaterialCommunityIcons name="keyboard-tab-reverse" size={22} color="white" />
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Right')}>
+            <MaterialCommunityIcons name="keyboard-tab" size={22} color="white" />
+          </TouchableOpacity>
+        </View>
+        {renderButton('ㅇ ㅁ', 'ㅇㅁ')}
+        {renderButton('^ ~', '^~')}
+        {renderButton('@ /', '@/')}
+      </View>
+      <View style={styles.row}>
+        <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
+          <Text style={styles.specialButtonText}>가A0</Text>
+        </TouchableOpacity>
+        {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color="white" />, 'Space', 1)}
+        {renderButton(<MaterialCommunityIcons name="star" size={22} color="white" />, '★', 1)}
+        {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color="white" />, 'Enter', 1)}
+        {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color="white" />, 'Backspace', 1)}
+      </View>
+    </>
+  );
+
+  const renderEnglishLayout = () => {
+    const row1 = ['Left', 'Right', '★', '?', '@', '~', ':'];
+    const row2 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
+    const row3 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';'];
+    const row4 = ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'];
+
+    const renderKey = (key: string, idx: number, row: string) => {
+      if (key === 'Left') return renderButton(<MaterialCommunityIcons name="keyboard-tab-reverse" size={18} color="white" />, 'Left', 1, undefined, `${row}-${idx}`);
+      if (key === 'Right') return renderButton(<MaterialCommunityIcons name="keyboard-tab" size={18} color="white" />, 'Right', 1, undefined, `${row}-${idx}`);
+      const displayKey = isShifted ? key.toUpperCase() : key;
+      return renderButton(displayKey, displayKey, 1, undefined, `${row}-${key}`);
+    };
+
+    return (
+      <>
+        <View style={styles.row}>{row1.map((k, i) => renderKey(k, i, 'en-r1'))}</View>
+        <View style={styles.row}>{row2.map((k, i) => renderKey(k, i, 'en-r2'))}</View>
+        <View style={styles.row}>{row3.map((k, i) => renderKey(k, i, 'en-r3'))}</View>
+        <View style={styles.row}>{row4.map((k, i) => renderKey(k, i, 'en-r4'))}</View>
+        {renderBottomRow()}
+      </>
+    );
+  };
+
+  const renderNumericLayout = () => {
+    const row1 = ['Left', 'Right', '★', '👉', '👈'];
+    const row2 = ['0', '1', '2', '3', '+'];
+    const row3 = ['.', '4', '5', '6', '-'];
+    const row4 = [',', '7', '8', '9', '/'];
+
+    const renderKey = (key: string, idx: number, row: string) => {
+      if (key === 'Left') return renderButton(<MaterialCommunityIcons name="keyboard-tab-reverse" size={20} color="white" />, 'Left', 1, undefined, `${row}-${idx}`);
+      if (key === 'Right') return renderButton(<MaterialCommunityIcons name="keyboard-tab" size={20} color="white" />, 'Right', 1, undefined, `${row}-${idx}`);
+      if (key === '👉') return renderButton(<MaterialCommunityIcons name="hand-pointing-right" size={20} color="white" />, '👉', 1, undefined, `${row}-${idx}`);
+      if (key === '👈') return renderButton(<MaterialCommunityIcons name="hand-pointing-left" size={20} color="white" />, '👈', 1, undefined, `${row}-${idx}`);
+      return renderButton(key, key, 1, undefined, `${row}-${key}`);
+    };
+
+    return (
+      <>
+        <View style={styles.row}>{row1.map((k, i) => renderKey(k, i, 'num-r1'))}</View>
+        <View style={styles.row}>{row2.map((k, i) => renderKey(k, i, 'num-r2'))}</View>
+        <View style={styles.row}>{row3.map((k, i) => renderKey(k, i, 'num-r3'))}</View>
+        <View style={styles.row}>{row4.map((k, i) => renderKey(k, i, 'num-r4'))}</View>
+        {renderBottomRow()}
+      </>
+    );
+  };
 
   return (
     <View 
@@ -34,56 +148,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
       onStartShouldSetResponder={() => true}
       onResponderTerminationRequest={() => false}
     >
-      {/* Row 1 */}
-      <View style={styles.row}>
-        {renderButton('ㅣ', 'ㅣ')}
-        {renderButton('·', '·')}
-        {renderButton('ㅡ', 'ㅡ')}
-        {renderButton('. ,', '.,')}
-      </View>
-
-      {/* Row 2 */}
-      <View style={styles.row}>
-        {renderButton('ㄱ ㅋ', 'ㄱㅋ')}
-        {renderButton('ㄴ ㄹ', 'ㄴㄹ')}
-        {renderButton('ㄷ ㅌ', 'ㄷㅌ')}
-        {renderButton(': ;', ':;')}
-      </View>
-
-      {/* Row 3 */}
-      <View style={styles.row}>
-        {renderButton('ㅂ ㅍ', 'ㅂㅍ')}
-        {renderButton('ㅅ ㅎ', 'ㅅㅎ')}
-        {renderButton('ㅈ ㅊ', 'ㅈㅊ')}
-        {renderButton('? !', '?!')}
-      </View>
-
-      {/* Row 4 */}
-      <View style={styles.row}>
-        <View style={[styles.splitButtonContainer, { flex: 1 }]}>
-          <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Left')}>
-            <Ionicons name="arrow-back" size={22} color="white" />
-          </TouchableOpacity>
-          <View style={styles.separator} />
-          <TouchableOpacity style={styles.splitButton} onPress={() => onPress('Right')}>
-            <Ionicons name="arrow-forward" size={22} color="white" />
-          </TouchableOpacity>
-        </View>
-        {renderButton('ㅇ ㅁ', 'ㅇㅁ')}
-        {renderButton('^ ~', '^~')}
-        {renderButton('@ /', '@/')}
-      </View>
-
-      {/* Row 5 */}
-      <View style={styles.row}>
-        <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
-          <Text style={styles.specialButtonText}>{mode === 'ko' ? '가A0' : mode === 'en' ? 'ABC' : '123'}</Text>
-        </TouchableOpacity>
-        {renderButton('_', 'Space', 1, <MaterialCommunityIcons name="keyboard-space" size={24} color="white" />)}
-        {renderButton('★', '★')}
-        {renderButton('↵', 'Enter', 1, <MaterialCommunityIcons name="keyboard-return" size={24} color="white" />)}
-        {renderButton('⌫', 'Backspace', 1, <MaterialCommunityIcons name="keyboard-backspace" size={24} color="white" />)}
-      </View>
+      {mode === 'ko' ? renderKoreanLayout() : mode === 'en' ? renderEnglishLayout() : renderNumericLayout()}
     </View>
   );
 };
@@ -121,7 +186,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   specialButton: {
-    backgroundColor: '#444',
+    backgroundColor: '#333',
   },
   specialButtonText: {
     color: '#ddd',
