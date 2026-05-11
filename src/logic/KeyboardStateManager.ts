@@ -98,6 +98,12 @@ export class KeyboardStateManager {
       this.finalize();
       if (this.isIME && IMEModule) IMEModule.sendEnter();
       else this.fullText += '\n';
+    } else if (button === 'Left') {
+      this.finalize();
+      if (this.isIME && IMEModule) IMEModule.moveCursorLeft();
+    } else if (button === 'Right') {
+      this.finalize();
+      if (this.isIME && IMEModule) IMEModule.moveCursorRight();
     } else {
       this.finalize();
       if (this.isIME && IMEModule) IMEModule.commitText(button);
@@ -132,6 +138,10 @@ export class KeyboardStateManager {
       } else if (button === 'Enter') {
           if (this.isIME && IMEModule) IMEModule.sendEnter();
           else this.fullText += '\n';
+      } else if (button === 'Left') {
+          if (this.isIME && IMEModule) IMEModule.moveCursorLeft();
+      } else if (button === 'Right') {
+          if (this.isIME && IMEModule) IMEModule.moveCursorRight();
       } else {
           if (this.isIME && IMEModule) IMEModule.commitText(button);
           else this.fullText += button;

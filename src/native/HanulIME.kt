@@ -153,6 +153,26 @@ class HanulIME : InputMethodService() {
         ic?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, keyCode))
         ic?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, keyCode))
     }
+
+    fun moveSelection(offset: Int) {
+        val ic = currentInputConnection ?: return
+        val extracted = ic.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0) ?: return
+        val selectionStart = extracted.selectionStart
+        val selectionEnd = extracted.selectionEnd
+        
+        // Only move if it's a cursor (not a selection range)
+        if (selectionStart == selectionEnd) {
+            val newPos = (selectionStart + offset).coerceIn(0, extracted.text.length)
+            ic.setSelection(newPos, newPos)
+        } else {
+            // If there's a selection, move to the beginning/end of the selection
+            if (offset < 0) {
+                ic.setSelection(selectionStart, selectionStart)
+            } else {
+                ic.setSelection(selectionEnd, selectionEnd)
+            }
+        }
+    }
 }
 
 class IMEModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
@@ -186,6 +206,16 @@ class IMEModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaMod
     @ReactMethod
     fun sendSpace() {
         HanulIME.currentInstance?.sendText(" ")
+    }
+
+    @ReactMethod
+    fun moveCursorLeft() {
+        HanulIME.currentInstance?.moveSelection(-1)
+    }
+
+    @ReactMethod
+    fun moveCursorRight() {
+        HanulIME.currentInstance?.moveSelection(1)
     }
 }
 
