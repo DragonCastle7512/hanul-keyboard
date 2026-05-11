@@ -76,10 +76,10 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
 
       {/* Row 5 */}
       <View style={styles.row}>
-        <TouchableOpacity style={[styles.button, styles.specialButton]} onPress={onModeChange}>
+        <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
           <Text style={styles.specialButtonText}>{mode === 'ko' ? '가A0' : mode === 'en' ? 'ABC' : '123'}</Text>
         </TouchableOpacity>
-        {renderButton('_', 'Space', 1.5, <MaterialCommunityIcons name="keyboard-space" size={24} color="white" />)}
+        {renderButton('_', 'Space', 1, <MaterialCommunityIcons name="keyboard-space" size={24} color="white" />)}
         {renderButton('★', '★')}
         {renderButton('↵', 'Enter', 1, <MaterialCommunityIcons name="keyboard-return" size={24} color="white" />)}
         {renderButton('⌫', 'Backspace', 1, <MaterialCommunityIcons name="keyboard-backspace" size={24} color="white" />)}
@@ -127,6 +127,10 @@ const styles = StyleSheet.create({
     color: '#ddd',
     fontSize: 16,
     fontWeight: 'bold',
+    includeFontPadding: false, 
+    textAlignVertical: 'center',
+    textAlign: 'center',
+    width: '100%',
   },
   splitButtonContainer: {
     flexDirection: 'row',
