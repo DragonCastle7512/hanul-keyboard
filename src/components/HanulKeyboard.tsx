@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -13,6 +13,36 @@ const BUTTON_HEIGHT = 60;
 
 const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChange }) => {
   const [isShifted, setIsShifted] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const startRepeat = (value: string) => {
+    stopRepeat();
+    onPress(value);
+    timerRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => {
+        onPress(value);
+      }, 50);
+    }, 500);
+  };
+
+  const stopRepeat = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
 
   const renderButton = (label: React.ReactNode, value: string, flex = 1, style?: any, key?: string) => (
     <TouchableOpacity
@@ -21,8 +51,18 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
       onPress={() => {
         if (value === 'Shift') {
           setIsShifted(!isShifted);
-        } else {
+        } else if (value !== 'Backspace') {
           onPress(value);
+        }
+      }}
+      onPressIn={() => {
+        if (value === 'Backspace') {
+          startRepeat(value);
+        }
+      }}
+      onPressOut={() => {
+        if (value === 'Backspace') {
+          stopRepeat();
         }
       }}
       activeOpacity={0.7}
