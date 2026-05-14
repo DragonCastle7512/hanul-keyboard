@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import HanulKeyboard from './src/components/HanulKeyboard';
 import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateManager';
@@ -17,19 +17,23 @@ export default function App(props: any) {
 
   const stateManager = useMemo(() => {
     return new KeyboardStateManager((text) => {
-      setDisplayText(text);
+      if (!isIME) {
+        setDisplayText(text);
+      }
     }, isIME);
   }, [isIME]);
 
-  const handleKeyPress = (key: string) => {
+  const handleKeyPress = useCallback((key: string) => {
     stateManager.handlePress(key);
-  };
+  }, [stateManager]);
 
-  const toggleMode = () => {
-    const nextMode: KeyboardMode = mode === 'ko' ? 'en' : mode === 'en' ? 'num' : 'ko';
-    setMode(nextMode);
-    stateManager.setMode(nextMode);
-  };
+  const toggleMode = useCallback(() => {
+    setMode((prevMode) => {
+      const nextMode: KeyboardMode = prevMode === 'ko' ? 'en' : prevMode === 'en' ? 'num' : 'ko';
+      stateManager.setMode(nextMode);
+      return nextMode;
+    });
+  }, [stateManager]);
 
   return (
     <View style={[styles.container, isIME && styles.imeContainer]}>

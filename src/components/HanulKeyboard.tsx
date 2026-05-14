@@ -11,7 +11,7 @@ interface HanulKeyboardProps {
 const BUTTON_MARGIN = 2;
 const BUTTON_HEIGHT = 60;
 
-const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChange }) => {
+const HanulKeyboard = React.memo(({ onPress, mode, onModeChange }: HanulKeyboardProps) => {
   const [isShifted, setIsShifted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -77,7 +77,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
 
   const renderBottomRow = () => (
     <View style={styles.row}>
-      <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
+      <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={onModeChange}>
         <Text style={styles.specialButtonText}>가A0</Text>
       </TouchableOpacity>
       {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color="white" />, 'Space', 1)}
@@ -122,7 +122,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
         {renderButton('@ /', '@/')}
       </View>
       <View style={styles.row}>
-        <TouchableOpacity style={[styles.button, styles.specialButton, { flex: 1 }]} onPress={onModeChange}>
+        <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={onModeChange}>
           <Text style={styles.specialButtonText}>가A0</Text>
         </TouchableOpacity>
         {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color="white" />, 'Space', 1)}
@@ -191,7 +191,7 @@ const HanulKeyboard: React.FC<HanulKeyboardProps> = ({ onPress, mode, onModeChan
       {mode === 'ko' ? renderKoreanLayout() : mode === 'en' ? renderEnglishLayout() : renderNumericLayout()}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -224,9 +224,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     textAlign: 'center',
     width: '100%',
-  },
-  specialButton: {
-    backgroundColor: '#333',
   },
   specialButtonText: {
     color: '#ddd',
