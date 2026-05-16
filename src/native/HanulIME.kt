@@ -19,6 +19,12 @@ import android.graphics.Color
 import android.view.ViewGroup
 import android.os.Handler
 import android.os.Looper
+import android.content.Intent
+import android.provider.Settings
+import android.content.ComponentName
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+import com.facebook.react.bridge.Promise
 
 class HanulIME : InputMethodService() {
     companion object {
@@ -215,6 +221,27 @@ class IMEModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaMod
     @ReactMethod
     fun moveCursorRight() {
         HanulIME.currentInstance?.moveSelection(1)
+    }
+
+    @ReactMethod
+    fun openKeyboardSettings() {
+        val context = reactApplicationContext
+        val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    @ReactMethod
+    fun isKeyboardEnabled(promise: Promise) {
+        try {
+            val context = reactApplicationContext
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val isEnabled = imm.enabledInputMethodList.any { it.packageName == context.packageName }
+            promise.resolve(isEnabled)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e)
+        }
     }
 }
 

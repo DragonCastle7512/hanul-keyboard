@@ -18,7 +18,7 @@ module.exports = function withHanulIME(config) {
       mainApplication.service.push({
         $: {
           'android:name': '.HanulIME',
-          'android:label': '@string/app_name',
+          'android:label': '한울 키보드',
           'android:permission': 'android.permission.BIND_INPUT_METHOD',
           'android:exported': 'true'
         },

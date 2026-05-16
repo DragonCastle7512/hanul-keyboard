@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { StyleSheet, Text, View, NativeModules } from 'react-native';
 import HanulKeyboard from './src/components/HanulKeyboard';
 import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateManager';
 
@@ -14,6 +14,22 @@ export default function App(props: any) {
   
   const [displayText, setDisplayText] = useState('');
   const [mode, setMode] = useState<KeyboardMode>('ko');
+
+  useEffect(() => {
+    if (!isIME && NativeModules.IMEModule) {
+      const checkAndOpenSettings = async () => {
+        try {
+          const isEnabled = await NativeModules.IMEModule.isKeyboardEnabled();
+          if (!isEnabled) {
+            NativeModules.IMEModule.openKeyboardSettings();
+          }
+        } catch (e) {
+          console.error("Failed to check keyboard status", e);
+        }
+      };
+      checkAndOpenSettings();
+    }
+  }, [isIME]);
 
   const stateManager = useMemo(() => {
     return new KeyboardStateManager((text) => {
