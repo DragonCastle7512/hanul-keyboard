@@ -92,7 +92,7 @@ export class KeyboardStateManager {
         if (this.isIME) this.syncToIME(oldComposing);
       } else {
         if (this.isIME && IMEModule) IMEModule.deleteBackward();
-        else this.fullText = this.fullText.slice(0, -1);
+        else this.fullText = Array.from(this.fullText).slice(0, -1).join('');
       }
     } else if (button === 'Enter') {
       this.finalize();
@@ -131,7 +131,7 @@ export class KeyboardStateManager {
   private handleOther(button: string) {
       if (button === 'Backspace') {
           if (this.isIME && IMEModule) IMEModule.deleteBackward();
-          else this.fullText = this.fullText.slice(0, -1);
+          else this.fullText = Array.from(this.fullText).slice(0, -1).join('');
       } else if (button === 'Space') {
           if (this.isIME && IMEModule) IMEModule.sendSpace();
           else this.fullText += ' ';

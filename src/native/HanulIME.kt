@@ -144,8 +144,7 @@ class HanulIME : InputMethodService() {
     }
 
     fun deleteText() {
-        val ic = currentInputConnection
-        ic?.deleteSurroundingText(1, 0)
+        sendKey(android.view.KeyEvent.KEYCODE_DEL)
     }
 
     fun sendKey(keyCode: Int) {
