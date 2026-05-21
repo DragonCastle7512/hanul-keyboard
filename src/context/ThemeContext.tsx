@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeMode, Themes, ThemeColors } from '../types/theme';
+
+const THEME_STORAGE_KEY = '@hanul_keyboard_theme';
 
 interface ThemeContextType {
   themeMode: ThemeMode;
@@ -10,7 +13,37 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('black');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('black');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (savedTheme && (savedTheme === 'black' || savedTheme === 'pink')) {
+          setThemeModeState(savedTheme as ThemeMode);
+        }
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadTheme();
+  }, []);
+
+  const setThemeMode = async (mode: ThemeMode) => {
+    try {
+      setThemeModeState(mode);
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+    } catch (error) {
+      console.error('Failed to save theme:', error);
+    }
+  };
+
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ themeMode, colors: Themes[themeMode], setThemeMode }}>

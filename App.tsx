@@ -34,10 +34,6 @@ function AppContent(props: any) {
     });
   }, [stateManager]);
 
-  const toggleTheme = useCallback(() => {
-    setThemeMode(themeMode === 'black' ? 'pink' : 'black');
-  }, [themeMode, setThemeMode]);
-
   const openKeyboardSettings = useCallback(() => {
     if (IMEModule && typeof IMEModule.openKeyboardSettings === 'function') {
       IMEModule.openKeyboardSettings();
@@ -59,15 +55,6 @@ function AppContent(props: any) {
       {!isIME ? (
         <SafeAreaView style={styles.appArea}>
           <View style={[styles.displayArea, { backgroundColor: themeMode === 'black' ? '#111' : '#fff' }]}>
-            <View style={styles.appHeader}>
-              <Text style={[styles.headerTitle, { color: colors.buttonText }]}>Hanul Keyboard</Text>
-              <TouchableOpacity 
-                onPress={toggleTheme} 
-                style={[styles.themeToggle, { backgroundColor: colors.buttonBackground }]}
-              >
-                <Text style={{ color: colors.buttonText }}>Theme: {themeMode}</Text>
-              </TouchableOpacity>
-            </View>
             <Text style={[styles.displayText, { color: themeMode === 'black' ? '#fff' : '#000' }]} numberOfLines={10}>
               {displayText}
               <Text style={styles.cursor}>|</Text>
@@ -81,7 +68,6 @@ function AppContent(props: any) {
           onPress={handleKeyPress} 
           mode={mode}
           onModeChange={toggleMode}
-          onToggleTheme={toggleTheme}
           onOpenSettings={openKeyboardSettings}
         />
       </View>

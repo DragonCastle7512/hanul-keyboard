@@ -105,7 +105,7 @@ class HanulIME : InputMethodService() {
         if (totalHeight <= 0) return
 
         val scale = resources.displayMetrics.density
-        val keyboardHeightPx = (350 * scale + 0.5f).toInt()
+        val keyboardHeightPx = (700 * scale + 0.5f).toInt()
         val navigationBarHeightPx = getNavigationBarHeightPx()
         val totalKeyboardHeightPx = keyboardHeightPx + navigationBarHeightPx
         

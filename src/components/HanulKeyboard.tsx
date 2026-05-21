@@ -1,21 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import ThemeSelector from './ThemeSelector';
 
 interface HanulKeyboardProps {
   onPress: (key: string) => void;
   mode: string;
   onModeChange: () => void;
-  onToggleTheme: () => void;
   onOpenSettings: () => void;
 }
 
-const BUTTON_MARGIN = 2;
+const BUTTON_MARGIN_VER = 3;
+const BUTTON_MARGIN_HOZ = 2;
 const BUTTON_HEIGHT = 48;
 
-const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onToggleTheme, onOpenSettings }: HanulKeyboardProps) => {
+const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings }: HanulKeyboardProps) => {
   const [isShifted, setIsShifted] = useState(false);
+  const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
   const { colors } = useTheme();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -85,7 +87,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onToggleTheme, 
 
   const renderFunctionBar = () => (
     <View style={[styles.functionBar, { backgroundColor: colors.functionBarBackground, borderBottomColor: colors.separator }]}>
-      <TouchableOpacity onPress={onToggleTheme}>
+      <TouchableOpacity onPress={() => setIsThemeModalVisible(true)}>
         <MaterialCommunityIcons name="palette-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
       </TouchableOpacity>
       <MaterialCommunityIcons name="emoticon-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
@@ -212,18 +214,20 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onToggleTheme, 
   return (
     <View 
       style={[styles.container, { backgroundColor: colors.background }]}
-      onStartShouldSetResponder={() => true}
-      onResponderTerminationRequest={() => false}
     >
       {renderFunctionBar()}
       {mode === 'ko' ? renderKoreanLayout() : mode === 'en' ? renderEnglishLayout() : renderNumericLayout()}
+      <ThemeSelector 
+        isVisible={isThemeModalVisible} 
+        onClose={() => setIsThemeModalVisible(false)} 
+      />
     </View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
-    padding: BUTTON_MARGIN,
+    padding: BUTTON_MARGIN_VER,
     paddingBottom: 20,
   },
   functionBar: {
@@ -232,18 +236,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     borderBottomWidth: 1,
-    marginBottom: BUTTON_MARGIN,
+    marginBottom: BUTTON_MARGIN_VER,
   },
   functionIcon: {
     marginRight: 20,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: BUTTON_MARGIN,
+    marginBottom: BUTTON_MARGIN_VER,
   },
   button: {
     height: BUTTON_HEIGHT,
-    marginHorizontal: BUTTON_MARGIN,
+    marginHorizontal: BUTTON_MARGIN_HOZ,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -272,7 +276,7 @@ const styles = StyleSheet.create({
   splitButtonContainer: {
     flexDirection: 'row',
     height: BUTTON_HEIGHT,
-    marginHorizontal: BUTTON_MARGIN,
+    marginHorizontal: BUTTON_MARGIN_HOZ,
     borderRadius: 8,
     overflow: 'hidden',
   },
