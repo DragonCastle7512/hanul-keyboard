@@ -90,8 +90,6 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings 
       <TouchableOpacity onPress={() => setIsThemeModalVisible(true)}>
         <MaterialCommunityIcons name="palette-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
       </TouchableOpacity>
-      <MaterialCommunityIcons name="emoticon-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
-      <MaterialCommunityIcons name="clipboard-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
       <TouchableOpacity onPress={onOpenSettings}>
         <MaterialCommunityIcons name="cog-outline" size={24} color={colors.iconColor} style={styles.functionIcon} />
       </TouchableOpacity>
