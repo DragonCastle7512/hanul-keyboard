@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import android.graphics.Color
+import android.graphics.Region
 import android.view.ViewGroup
 import android.os.Handler
 import android.os.Looper
@@ -102,10 +103,11 @@ class HanulIME : InputMethodService() {
         val inputView = mContainer ?: return
         
         val totalHeight = inputView.height
+        val totalWidth = inputView.width
         if (totalHeight <= 0) return
 
         val scale = resources.displayMetrics.density
-        val keyboardHeightPx = (700 * scale + 0.5f).toInt()
+        val keyboardHeightPx = (320 * scale + 0.5f).toInt()
         val navigationBarHeightPx = getNavigationBarHeightPx()
         val totalKeyboardHeightPx = keyboardHeightPx + navigationBarHeightPx
         
@@ -113,7 +115,9 @@ class HanulIME : InputMethodService() {
 
         outInsets.contentTopInsets = top
         outInsets.visibleTopInsets = top
-        outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
+        
+        outInsets.touchableRegion.set(0, top, totalWidth, totalHeight)
+        outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_REGION
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
