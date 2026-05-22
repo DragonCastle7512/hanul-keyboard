@@ -20,7 +20,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const loadTheme = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedTheme && (savedTheme === 'black' || savedTheme === 'pink')) {
+        if (savedTheme && (savedTheme === 'black' || savedTheme === 'darkblue')) {
           setThemeModeState(savedTheme as ThemeMode);
         }
       } catch (error) {

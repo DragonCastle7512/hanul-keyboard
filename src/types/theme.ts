@@ -1,4 +1,4 @@
-export type ThemeMode = 'black' | 'pink';
+export type ThemeMode = 'black' | 'darkblue';
 
 export interface ThemeColors {
   background: string;
@@ -20,13 +20,13 @@ export const Themes: Record<ThemeMode, ThemeColors> = {
     iconColor: '#888',
     separator: '#555',
   },
-  pink: {
-    background: '#fff0f5',
-    buttonBackground: '#ffc0cb',
-    buttonText: '#d02090',
-    specialButtonText: '#d02090',
-    functionBarBackground: '#ffe4e1',
-    iconColor: '#d02090',
-    separator: '#ffd1dc',
+  darkblue: {
+    background: '#263238',
+    buttonBackground: '#37474F',
+    buttonText: '#FFFFFF',
+    specialButtonText: '#FFFFFF',
+    functionBarBackground: '#212D33',
+    iconColor: '#80CBC4',
+    separator: '#1B262C',
   },
 };

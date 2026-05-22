@@ -101,7 +101,7 @@ const ThemeSelector = ({ isVisible, onClose }: ThemeSelectorProps) => {
             >
               <View style={styles.themeInfo}>
                 <Text style={[styles.themeLabel, { color: Themes[mode].buttonText }]}>
-                  {mode === 'black' ? '다크 블랙' : mode === 'pink' ? '러블리 핑크' : mode}
+                  {mode === 'black' ? '다크 블랙' : mode === 'darkblue' ? '다크 블루' : mode}
                 </Text>
                 {themeMode === mode && (
                   <Text style={[styles.selectedText, { color: colors.buttonText }]}>사용 중 ✓</Text>
