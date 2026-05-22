@@ -293,6 +293,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false, 
     textAlignVertical: 'center',
     textAlign: 'center',
+    lineHeight: 28,
     width: '100%',
   },
   specialButtonText: {
