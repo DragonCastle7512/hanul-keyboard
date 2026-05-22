@@ -9,14 +9,14 @@ interface HanulKeyboardProps {
   mode: string;
   onModeChange: () => void;
   onOpenSettings: () => void;
+  shiftState: number;
 }
 
 const BUTTON_MARGIN_VER = 3;
 const BUTTON_MARGIN_HOZ = 2;
 const BUTTON_HEIGHT = 48;
 
-const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings }: HanulKeyboardProps) => {
-  const [isShifted, setIsShifted] = useState(false);
+const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings, shiftState }: HanulKeyboardProps) => {
   const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
   const { colors } = useTheme();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,9 +59,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings 
         style
       ]}
       onPress={() => {
-        if (value === 'Shift') {
-          setIsShifted(!isShifted);
-        } else if (value !== 'Backspace') {
+        if (value !== 'Backspace') {
           onPress(value);
         }
       }}
@@ -105,7 +103,28 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings 
         <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>가A0</Text>
       </TouchableOpacity>
       {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 1)}
-      {renderButton(<MaterialCommunityIcons name="arrow-up-bold-outline" size={22} color={colors.buttonText} />, 'Shift', 1)}
+      
+      <TouchableOpacity
+        style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]}
+        onPress={() => onPress('Shift')}
+      >
+        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <MaterialCommunityIcons 
+            name={shiftState === 0 ? "arrow-up-bold-outline" : "arrow-up-bold"} 
+            size={22} 
+            color={colors.buttonText} 
+          />
+          {shiftState === 2 && (
+            <MaterialCommunityIcons 
+              name="lock" 
+              size={10} 
+              color={colors.buttonText} 
+              style={{ position: 'absolute', bottom: -2, right: -4 }} 
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+
       {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
       {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1)}
     </View>
@@ -169,8 +188,21 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings 
     const renderKey = (key: string, idx: number, row: string) => {
       if (key === 'Left') return renderButton(<MaterialCommunityIcons name="keyboard-tab-reverse" size={18} color={colors.buttonText} />, 'Left', 1, undefined, `${row}-${idx}`);
       if (key === 'Right') return renderButton(<MaterialCommunityIcons name="keyboard-tab" size={18} color={colors.buttonText} />, 'Right', 1, undefined, `${row}-${idx}`);
-      const displayKey = isShifted ? key.toUpperCase() : key;
-      return renderButton(displayKey, displayKey, 1, undefined, `${row}-${key}`);
+      
+      const displayKey = shiftState > 0 ? key.toUpperCase() : key;
+
+      return (
+        <TouchableOpacity
+          key={`${row}-${key}`}
+          style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]}
+          onPress={() => onPress(key)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.buttonText, { color: colors.buttonText }, { fontSize: 22 }]}>
+            {displayKey}
+          </Text>
+        </TouchableOpacity>
+      );
     };
 
     return (

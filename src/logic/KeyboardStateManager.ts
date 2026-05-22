@@ -12,21 +12,24 @@ export class KeyboardStateManager {
   private lastButton: string | null = null;
   private lastTimestamp: number = 0;
   private mode: KeyboardMode = 'ko';
+  private shiftState: number = 0; // 0: lower, 1: upper, 2: capslock
   private CYCLE_TIMEOUT = 1000;
   private isIME: boolean = false;
 
-  constructor(onUpdate: (text: string) => void, isIME: boolean = false) {
+  constructor(onUpdate: (text: string, shiftState: number) => void, isIME: boolean = false) {
     this.onUpdate = onUpdate;
     this.isIME = isIME;
   }
 
-  private onUpdate: (text: string) => void;
+  private onUpdate: (text: string, shiftState: number) => void;
 
   public handlePress(button: string) {
     const now = Date.now();
     const isSameButton = this.lastButton === button && (now - this.lastTimestamp < this.CYCLE_TIMEOUT);
 
-    if (this.mode === 'ko') {
+    if (button === 'Shift') {
+      this.shiftState = (this.shiftState + 1) % 3;
+    } else if (this.mode === 'ko') {
       this.handleKorean(button, isSameButton);
     } else {
       this.handleOther(button);
@@ -34,7 +37,7 @@ export class KeyboardStateManager {
 
     this.lastButton = button;
     this.lastTimestamp = now;
-    this.onUpdate(this.getText());
+    this.onUpdate(this.getText(), this.shiftState);
   }
 
   private handleKorean(button: string, isSameButton: boolean) {
@@ -143,8 +146,18 @@ export class KeyboardStateManager {
       } else if (button === 'Right') {
           if (this.isIME && IMEModule) IMEModule.moveCursorRight();
       } else {
-          if (this.isIME && IMEModule) IMEModule.commitText(button);
-          else this.fullText += button;
+          let textToCommit = button;
+          const isLetter = /^[a-z]$/i.test(button);
+          
+          if (isLetter && this.shiftState > 0) {
+              textToCommit = button.toUpperCase();
+              if (this.shiftState === 1) {
+                  this.shiftState = 0;
+              }
+          }
+
+          if (this.isIME && IMEModule) IMEModule.commitText(textToCommit);
+          else this.fullText += textToCommit;
       }
   }
 

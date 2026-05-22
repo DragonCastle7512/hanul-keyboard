@@ -12,13 +12,15 @@ function AppContent(props: any) {
   
   const [displayText, setDisplayText] = useState('');
   const [mode, setMode] = useState<KeyboardMode>('ko');
+  const [shiftState, setShiftState] = useState(0);
   const { themeMode, setThemeMode, colors } = useTheme();
 
   const stateManager = useMemo(() => {
-    return new KeyboardStateManager((text) => {
+    return new KeyboardStateManager((text, sState) => {
       if (!isIME) {
         setDisplayText(text);
       }
+      setShiftState(sState);
     }, isIME);
   }, [isIME]);
 
@@ -69,6 +71,7 @@ function AppContent(props: any) {
           mode={mode}
           onModeChange={toggleMode}
           onOpenSettings={openKeyboardSettings}
+          shiftState={shiftState}
         />
       </View>
     </View>

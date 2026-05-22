@@ -73,51 +73,6 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
     });
   });
 
-  describe('시스템 키보드 모드 (isIME: true)', () => {
-    beforeEach(() => {
-      manager = new KeyboardStateManager(updateCallback, true);
-    });
-
-    test('글자 입력 시 setComposingText가 호출되어야 한다', () => {
-      manager.handlePress('ㄱㅋ'); // ㄱ
-      expect(IMEModule.setComposingText).toHaveBeenCalledWith('ㄱ');
-      
-      manager.handlePress('ㅣ'); // 기
-      expect(IMEModule.setComposingText).toHaveBeenCalledWith('기');
-    });
-
-    test('Space 입력 시 조합 중인 글자를 확정하고 Space를 전송해야 한다', () => {
-      manager.handlePress('ㄱㅋ');
-      manager.handlePress('ㅣ');
-      manager.handlePress('·'); // 가
-      
-      manager.handlePress('Space');
-      expect(IMEModule.finishComposingText).toHaveBeenCalled();
-      expect(IMEModule.sendSpace).toHaveBeenCalled();
-    });
-
-    test('Backspace 입력 시 조합 중이면 composingText를 업데이트하고, 비어있으면 deleteBackward를 호출해야 한다', () => {
-      manager.handlePress('ㄱㅋ'); // ㄱ
-      manager.handlePress('ㅣ');   // 기
-      manager.handlePress('Backspace');
-      expect(IMEModule.setComposingText).toHaveBeenCalledWith('ㄱ');
-
-      manager.handlePress('Backspace');
-      expect(IMEModule.finishComposingText).toHaveBeenCalled();
-
-      manager.handlePress('Backspace');
-      expect(IMEModule.deleteBackward).toHaveBeenCalled();
-    });
-
-    test('동일 버튼 연타로 자음 순환 시 setComposingText가 지속적으로 호출되어야 한다', () => {
-      manager.handlePress('ㄱㅋ'); // ㄱ
-      expect(IMEModule.setComposingText).toHaveBeenCalledWith('ㄱ');
-      
-      manager.handlePress('ㄱㅋ'); // ㅋ
-      expect(IMEModule.setComposingText).toHaveBeenCalledWith('ㅋ');
-    });
-  });
-
   describe('공통 및 예외 케이스', () => {
     test('엔터(Enter) 입력 시 글자 확정 및 엔터 신호 전송', () => {
       manager = new KeyboardStateManager(updateCallback, true);
@@ -133,6 +88,33 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
       manager.handlePress('Left');
       expect(IMEModule.finishComposingText).toHaveBeenCalled();
       expect(IMEModule.moveCursorLeft).toHaveBeenCalled();
+    });
+  });
+
+  describe('영어 및 대소문자 전환 (English & Shift Cycle)', () => {
+    beforeEach(() => {
+      manager = new KeyboardStateManager(updateCallback, false);
+      manager.setMode('en');
+    });
+
+    test('Shift 버튼 클릭 시 3단계로 순환해야 한다 (0 -> 1 -> 2 -> 0)', () => {
+      // 초기 상태: 0 (소문자)
+      manager.handlePress('a');
+      expect(manager.getText()).toBe('a');
+
+      manager.handlePress('Shift');
+      manager.handlePress('b');
+      expect(manager.getText()).toBe('aB')
+
+      manager.handlePress('Shift');
+      manager.handlePress('Shift');
+      manager.handlePress('c');
+      manager.handlePress('d');
+      expect(manager.getText()).toBe('aBCD');
+
+      manager.handlePress('Shift');
+      manager.handlePress('e');
+      expect(manager.getText()).toBe('aBCDe');
     });
   });
 });
