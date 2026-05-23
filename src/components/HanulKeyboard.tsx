@@ -102,7 +102,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings,
       >
         <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>가A0</Text>
       </TouchableOpacity>
-      {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 1)}
+      {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
       
       <TouchableOpacity
         style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]}
@@ -125,7 +125,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings,
         </View>
       </TouchableOpacity>
 
-      {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
+      {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 1)}
       {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1)}
     </View>
   );
@@ -171,9 +171,9 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onOpenSettings,
         >
           <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>가A0</Text>
         </TouchableOpacity>
-        {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 1)}
-        {renderButton(<MaterialCommunityIcons name="star" size={22} color={colors.buttonText} />, '★', 1)}
         {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
+        {renderButton(<MaterialCommunityIcons name="star" size={22} color={colors.buttonText} />, '★', 1)}
+        {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 1)}
         {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1)}
       </View>
     </>
