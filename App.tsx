@@ -55,6 +55,11 @@ function AppContent(props: any) {
     });
   }, [stateManager]);
 
+  const handleSetMode = useCallback((newMode: KeyboardMode) => {
+    setMode(newMode);
+    stateManager.setMode(newMode);
+  }, [stateManager]);
+
   const openKeyboardSettings = useCallback(() => {
     if (IMEModule && typeof IMEModule.openKeyboardSettings === 'function') {
       IMEModule.openKeyboardSettings();
@@ -89,6 +94,7 @@ function AppContent(props: any) {
           onPress={handleKeyPress} 
           mode={mode}
           onModeChange={toggleMode}
+          onSetMode={handleSetMode}
           onOpenSettings={openKeyboardSettings}
           shiftState={shiftState}
         />
