@@ -3,16 +3,34 @@ import { NativeModules } from 'react-native';
 
 const { IMEModule } = NativeModules;
 
+let committedText = '';
+let currentComposingText = '';
+
 // NativeModules 모킹
 jest.mock('react-native', () => ({
   NativeModules: {
     IMEModule: {
-      setComposingText: jest.fn(),
-      commitText: jest.fn(),
-      finishComposingText: jest.fn(),
-      deleteBackward: jest.fn(),
-      sendSpace: jest.fn(),
-      sendEnter: jest.fn(),
+      setComposingText: jest.fn((text: string) => {
+        currentComposingText = text;
+      }),
+      commitText: jest.fn((text: string) => {
+        committedText += text;
+      }),
+      finishComposingText: jest.fn(() => {
+        if (currentComposingText) {
+          committedText += currentComposingText;
+          currentComposingText = '';
+        }
+      }),
+      deleteBackward: jest.fn(() => {
+        committedText = committedText.slice(0, -1);
+      }),
+      sendSpace: jest.fn(() => {
+        committedText += ' ';
+      }),
+      sendEnter: jest.fn(() => {
+        committedText += '\n';
+      }),
       moveCursorLeft: jest.fn(),
       moveCursorRight: jest.fn(),
     },
@@ -28,6 +46,8 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
 
   beforeEach(() => {
     updateCallback = jest.fn();
+    committedText = '';
+    currentComposingText = '';
     jest.clearAllMocks();
     jest.useFakeTimers();
   });
@@ -36,46 +56,89 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
     jest.useRealTimers();
   });
 
-  describe('앱 내 텍스트 관리 모드 (isIME: false)', () => {
+  describe('IME 환경 (isIME: true) 텍스트 관리 및 시뮬레이션', () => {
     beforeEach(() => {
-      manager = new KeyboardStateManager(updateCallback, false);
+      manager = new KeyboardStateManager(updateCallback, true);
     });
 
-    test('기본적인 한글 입력을 처리해야 한다 (하눌)', () => {
-      manager.handlePress('ㅅㅎ');
-      manager.handlePress('ㅅㅎ'); // ㅎ
-      manager.handlePress('ㅣ');
-      manager.handlePress('·');   // 하
-      manager.handlePress('ㄴㄹ'); // 한 (ㄴ)
+    const getIMEText = () => {
+      return committedText + currentComposingText;
+    };
+
+    test('기본적인 한글 입력을 처리해야 한다 (겨울)', () => {
+      manager.handlePress('ㄱㅋ'); // ㄱ
+      manager.handlePress('·');
+      manager.handlePress('·');
+      manager.handlePress('ㅣ'); // 겨
+      jest.advanceTimersByTime(1100);
+      manager.handlePress('ㅇㅁ'); // 겨ㅇ
       manager.handlePress('ㅡ');
-      manager.handlePress('·');   // 하누
+      manager.handlePress('·');
       manager.handlePress('ㄴㄹ');
-      manager.handlePress('ㄴㄹ'); // 하눌 (ㄹ)
-      expect(manager.getText()).toBe('하눌');
+      manager.handlePress('ㄴㄹ'); // 겨울
+      expect(getIMEText()).toBe('겨울');
     });
 
     test('같은 자음 입력을 연속적으로 하는 경우 순환해야 한다', () => {
       manager.handlePress('ㄱㅋ');
-      expect(manager.getText()).toBe('ㄱ');
+      expect(getIMEText()).toBe('ㄱ');
       manager.handlePress('ㄱㅋ');
-      expect(manager.getText()).toBe('ㅋ');
+      expect(getIMEText()).toBe('ㅋ');
       manager.handlePress('ㄱㅋ');
-      expect(manager.getText()).toBe('ㄲ');
+      expect(getIMEText()).toBe('ㄲ');
       manager.handlePress('ㄱㅋ');
-      expect(manager.getText()).toBe('ㄱ');
+      expect(getIMEText()).toBe('ㄱ');
     });
 
     test('자음 입력 후 일정 시간이 지나면 동일 버튼이라도 순환하지 않아야 한다', () => {
       manager.handlePress('ㄱㅋ'); // ㄱ
       jest.advanceTimersByTime(1100);
       manager.handlePress('ㄱㅋ'); // ㄱ (ㄱㄱ)
-      expect(manager.getText()).toBe('ㄱㄱ');
+      expect(getIMEText()).toBe('ㄱㄱ');
     });
-  });
 
-  describe('공통 및 예외 케이스', () => {
+    test('글자 입력 후 외부(시스템/사용자)의 SelectionChange 이벤트가 발생하면 조합이 확정되어야 한다', () => {
+      manager.handlePress('ㄱㅋ');
+      
+      manager.onSelectionChange();
+      
+      manager.handlePress('ㅣ');
+      manager.handlePress('·');
+      
+      // '가' 가 아니라 'ㄱㅏ' 가 되어야 함 (이전 조합 'ㄱ' 이 확정되었으므로)
+      expect(getIMEText()).toBe('ㄱㅏ'); // ㄱㅏ
+    });
+
+    test('내부 업데이트 중에는 네이티브에서 이벤트를 보내지 않으므로 조합이 유지된다 (통합 테스트 관점)', () => {
+      manager.handlePress('ㄱㅋ');
+      manager.handlePress('ㅣ');
+      manager.handlePress('·');
+      expect(getIMEText()).toBe('가');
+    });
+
+    test('타이핑 직후(100ms 이내) 전송 버튼을 눌러도 상태가 초기화되어야 한다 (버그 재현)', () => {
+      // 1. '안' 입력
+      manager.handlePress('ㅇㅁ'); 
+      manager.handlePress('ㅣ');
+      manager.handlePress('·');
+      manager.handlePress('ㄴㄹ');
+      expect(getIMEText()).toBe('안');
+      
+      // 2. SelectionChange 발생 (전송 버튼 클릭 시뮬레이션)
+      manager.onSelectionChange();
+      
+      // 앱이 입력창을 비웠으므로 mock 상태도 비움
+      committedText = '';
+      currentComposingText = '';
+      
+      // 3. 새로운 글자 입력
+      manager.handlePress('ㄱㅋ');
+      
+      // 정상: 'ㄱ' 만 남아야 함
+      expect(getIMEText()).toBe('ㄱ');
+    });
+
     test('엔터(Enter) 입력 시 글자 확정 및 엔터 신호 전송', () => {
-      manager = new KeyboardStateManager(updateCallback, true);
       manager.handlePress('ㄱㅋ');
       manager.handlePress('Enter');
       expect(IMEModule.finishComposingText).toHaveBeenCalled();
@@ -83,7 +146,6 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
     });
 
     test('커서 이동 시 글자 확정', () => {
-      manager = new KeyboardStateManager(updateCallback, true);
       manager.handlePress('ㄱㅋ');
       manager.handlePress('Left');
       expect(IMEModule.finishComposingText).toHaveBeenCalled();
@@ -91,30 +153,34 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
     });
   });
 
-  describe('영어 및 대소문자 전환 (English & Shift Cycle)', () => {
+  describe('영어 및 대소문자 전환 (English & Shift Cycle - IME 환경)', () => {
     beforeEach(() => {
-      manager = new KeyboardStateManager(updateCallback, false);
+      manager = new KeyboardStateManager(updateCallback, true);
       manager.setMode('en');
     });
+
+    const getIMEText = () => {
+      return committedText + currentComposingText;
+    };
 
     test('Shift 버튼 클릭 시 3단계로 순환해야 한다 (0 -> 1 -> 2 -> 0)', () => {
       // 초기 상태: 0 (소문자)
       manager.handlePress('a');
-      expect(manager.getText()).toBe('a');
+      expect(getIMEText()).toBe('a');
 
       manager.handlePress('Shift');
       manager.handlePress('b');
-      expect(manager.getText()).toBe('aB')
+      expect(getIMEText()).toBe('aB')
 
       manager.handlePress('Shift');
       manager.handlePress('Shift');
       manager.handlePress('c');
       manager.handlePress('d');
-      expect(manager.getText()).toBe('aBCD');
+      expect(getIMEText()).toBe('aBCD');
 
       manager.handlePress('Shift');
       manager.handlePress('e');
-      expect(manager.getText()).toBe('aBCDe');
+      expect(getIMEText()).toBe('aBCDe');
     });
   });
 });
