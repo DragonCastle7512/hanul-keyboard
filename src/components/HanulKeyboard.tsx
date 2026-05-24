@@ -138,7 +138,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
       <View style={styles.row}>
         <TouchableOpacity 
           style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
-          onPress={onModeChange}
+          onPress={() => onSetMode('sym1')}
         >
           <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>기호</Text>
         </TouchableOpacity>
@@ -165,7 +165,6 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
       if (key === 'Left') return renderButton(<MaterialCommunityIcons name="keyboard-tab-reverse" size={18} color={colors.buttonText} />, 'Left', 1, undefined, `${row}-${idx}`);
       if (key === 'Right') return renderButton(<MaterialCommunityIcons name="keyboard-tab" size={18} color={colors.buttonText} />, 'Right', 1, undefined, `${row}-${idx}`);
       if (key === 'Backspace') return renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1, undefined, `${row}-${idx}`);
-      
       if (key === 'Shift') {
         return (
           <TouchableOpacity
@@ -217,7 +216,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
         <View style={styles.row}>
           <TouchableOpacity 
             style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
-            onPress={onModeChange}
+            onPress={() => onSetMode('sym1')}
           >
             <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>기호</Text>
           </TouchableOpacity>
@@ -239,7 +238,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
     const row1 = ['Left', 'Right', '(', ')', 'Backspace'];
     const row2 = ['.', '1', '2', '3', '+'];
     const row3 = [',', '4', '5', '6', '-']
-    const row4 = ['가', '7', '8', '9', '/'];
+    const row4 = ['가', '7', '8', '9', '÷'];
 
     const renderKey = (key: string, idx: number, row: string) => {
       if (key === 'Left') return renderButton(<MaterialCommunityIcons name="keyboard-tab-reverse" size={20} color={colors.buttonText} />, 'Left', 1, undefined, `${row}-${idx}`);
@@ -266,7 +265,7 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
         <View style={styles.row}>
           <TouchableOpacity 
             style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
-            onPress={onModeChange}
+            onPress={() => onSetMode('sym1')}
           >
             <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>기호</Text>
           </TouchableOpacity>
@@ -279,12 +278,113 @@ const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOp
     );
   };
 
+  const renderSymbol1Layout = () => {
+    const row1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    const row2 = ['+', '×', '÷', '=', '/', '_', '<', '>', '[', ']'];
+    const row3 = ['!', '@', '#', '~', '%', '^', '&', '*', '(', ')'];
+    const row4 = ['-', '\'', '\"', ':', ';', ',', '?'];
+    
+    return (
+      <>
+        <View style={styles.row}>
+          {row1.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          {row2.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          {row3.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1.5, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('sym2')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>1/2</Text>
+          </TouchableOpacity>
+          {row4.map(key => renderButton(key, key))}
+          {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1.5)}
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('ko')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>가</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('en')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>abc</Text>
+          </TouchableOpacity>
+          {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 2)}
+          {renderButton('.', '.', 0.7)}
+          {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
+          
+        </View>
+      </>
+    );
+  };
+
+  const renderSymbol2Layout = () => {
+    const row1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    const row2 = ['\`', '$', '\\', '|', '{', '}', '€', '£', '¥', '₩'];
+    const row3 = ['°', '•', '○', '●', '□', '■', '♤', '♡', '◇', '♧'];
+    const row4 = ['☆', '▪', '¤', '《', '》', '¡', '¿'];
+    
+    return (
+      <>
+        <View style={styles.row}>
+          {row1.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          {row2.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          {row3.map(key => renderButton(key, key))}
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1.5, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('sym1')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>2/2</Text>
+          </TouchableOpacity>
+          {row4.map(key => renderButton(key, key))}
+          {renderButton(<MaterialCommunityIcons name="backspace-outline" size={24} color={colors.buttonText} />, 'Backspace', 1.5)}
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('ko')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>가</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.button, { flex: 1, backgroundColor: colors.buttonBackground }]} 
+            onPress={() => onSetMode('en')}
+          >
+            <Text style={[styles.specialButtonText, { color: colors.specialButtonText }]}>abc</Text>
+          </TouchableOpacity>
+          {renderButton(<MaterialCommunityIcons name="keyboard-space" size={24} color={colors.buttonText} />, 'Space', 2)}
+          {renderButton('.', '.', 0.7)}
+          {renderButton(<MaterialCommunityIcons name="keyboard-return" size={24} color={colors.buttonText} />, 'Enter', 1)}
+        </View>
+      </>
+    );
+  };
+
   return (
     <View 
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       {renderFunctionBar()}
-      {mode === 'ko' ? renderKoreanLayout() : mode === 'en' ? renderEnglishLayout() : renderNumericLayout()}
+      {mode === 'ko' ? renderKoreanLayout() : 
+       mode === 'en' ? renderEnglishLayout() : 
+       mode === 'sym1' ? renderSymbol1Layout() :
+       mode === 'sym2' ? renderSymbol2Layout() :
+       renderNumericLayout()}
       <ThemeSelector 
         isVisible={isThemeModalVisible} 
         onClose={() => setIsThemeModalVisible(false)} 

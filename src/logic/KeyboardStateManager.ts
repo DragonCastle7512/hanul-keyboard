@@ -4,7 +4,7 @@ import { NativeModules, Platform } from 'react-native';
 
 const { IMEModule } = NativeModules;
 
-export type KeyboardMode = 'ko' | 'en' | 'num';
+export type KeyboardMode = 'ko' | 'en' | 'num' | 'sym1' | 'sym2';
 
 export class KeyboardStateManager {
   private fullText: string = '';

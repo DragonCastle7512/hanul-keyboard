@@ -49,7 +49,11 @@ function AppContent(props: any) {
 
   const toggleMode = useCallback(() => {
     setMode((prevMode) => {
-      const nextMode: KeyboardMode = prevMode === 'ko' ? 'en' : prevMode === 'en' ? 'num' : 'ko';
+      let nextMode: KeyboardMode;
+      if (prevMode === 'ko') nextMode = 'en';
+      else if (prevMode === 'en') nextMode = 'sym1';
+      else nextMode = 'ko';
+      
       stateManager.setMode(nextMode);
       return nextMode;
     });
