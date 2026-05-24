@@ -117,17 +117,29 @@ export class KeyboardStateManager {
   private syncToIME(oldComposing: string) {
     if (!IMEModule) return;
     const newComposing = assembleHangeul(this.composingJamos);
-    if (newComposing.length > 0 && typeof IMEModule.setComposingText === 'function') {
-        IMEModule.setComposingText(newComposing);
-    } else if (newComposing.length > 0) {
-        if (oldComposing.length > 0) {
-            for (let i = 0; i < oldComposing.length; i++) {
-                IMEModule.deleteBackward();
-            }
+    
+    const isCheonjiinPrimitive = (char: string) => char === 'ㅣ' || char === '·' || char === 'ㅡ';
+    
+    if (newComposing.length > 1) {
+        const remaining = newComposing.slice(-1);
+        if (isCheonjiinPrimitive(remaining)) {
+            IMEModule.setComposingText(newComposing);
+        } else {
+            const committed = newComposing.slice(0, -1);
+            IMEModule.commitText(committed);
+            IMEModule.setComposingText(remaining);
+            const remainingJamos = Hangul.disassemble(remaining);
+            this.composingJamos = remainingJamos;
         }
-        IMEModule.commitText(newComposing);
-    } else if (typeof IMEModule.finishComposingText === 'function') {
-        IMEModule.finishComposingText();
+    } else if (newComposing.length === 1) {
+        IMEModule.setComposingText(newComposing);
+    } else {
+        if (typeof IMEModule.setComposingText === 'function') {
+            IMEModule.setComposingText("");
+        }
+        if (typeof IMEModule.finishComposingText === 'function') {
+            IMEModule.finishComposingText();
+        }
     }
   }
 
@@ -181,5 +193,21 @@ export class KeyboardStateManager {
   public setMode(mode: KeyboardMode) {
       this.finalize();
       this.mode = mode;
+  }
+
+  public onSelectionChange() {
+    this.finalize();
+  }
+
+  public onFinishComposing() {
+    this.finalize();
+  }
+
+  public reset() {
+    this.fullText = '';
+    this.composingJamos = [];
+    this.lastButton = null;
+    this.lastTimestamp = 0;
+    this.onUpdate('', this.shiftState);
   }
 }

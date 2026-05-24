@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, NativeModules, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, TouchableOpacity, SafeAreaView, StatusBar, DeviceEventEmitter } from 'react-native';
 import HanulKeyboard from './src/components/HanulKeyboard';
 import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateManager';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -23,6 +23,25 @@ function AppContent(props: any) {
       setShiftState(sState);
     }, isIME);
   }, [isIME]);
+
+  useEffect(() => {
+    if (isIME) {
+      const subSelection = DeviceEventEmitter.addListener('onSelectionChange', () => {
+        stateManager.onSelectionChange();
+      });
+      const subFinish = DeviceEventEmitter.addListener('onFinishComposing', () => {
+        stateManager.onFinishComposing();
+      });
+      const subReset = DeviceEventEmitter.addListener('onResetState', () => {
+        stateManager.reset();
+      });
+      return () => {
+        subSelection.remove();
+        subFinish.remove();
+        subReset.remove();
+      };
+    }
+  }, [isIME, stateManager]);
 
   const handleKeyPress = useCallback((key: string) => {
     stateManager.handlePress(key);

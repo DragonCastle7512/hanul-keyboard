@@ -35,6 +35,7 @@ class HanulIME : InputMethodService() {
     private var mContainer: FrameLayout? = null
     private var mReactRootView: ReactRootView? = null
     private var mReactInstanceManager: ReactInstanceManager? = null
+    private var mIsInternalSelectionUpdate = false
 
     private fun getNavigationBarHeightPx(): Int {
         val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
@@ -101,7 +102,7 @@ class HanulIME : InputMethodService() {
     override fun onComputeInsets(outInsets: Insets) {
         super.onComputeInsets(outInsets)
         val inputView = mContainer ?: return
-        
+
         val totalHeight = inputView.height
         val totalWidth = inputView.width
         if (totalHeight <= 0) return
@@ -110,19 +111,72 @@ class HanulIME : InputMethodService() {
         val keyboardHeightPx = (320 * scale + 0.5f).toInt()
         val navigationBarHeightPx = getNavigationBarHeightPx()
         val totalKeyboardHeightPx = keyboardHeightPx + navigationBarHeightPx
-        
+
         val top = (totalHeight - totalKeyboardHeightPx).coerceAtLeast(0)
 
         outInsets.contentTopInsets = top
         outInsets.visibleTopInsets = top
-        
+
         outInsets.touchableRegion.set(0, top, totalWidth, totalHeight)
         outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_REGION
+    }
+
+    override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
+        super.onStartInput(info, restarting)
+        // 새로운 입력 세션이 시작될 때(전송 후, 입력창 이동 등) 무조건 JS 상태 리셋 신호 발송
+        try {
+            val reactContext = mReactInstanceManager?.currentReactContext
+            if (reactContext != null) {
+                reactContext
+                    .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    .emit("onResetState", null)
+            }
+        } catch (e: Exception) {
+        }
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         mReactInstanceManager?.onHostResume(null)
+    }
+
+    override fun onUpdateSelection(
+        oldSelStart: Int, oldSelEnd: Int,
+        newSelStart: Int, newSelEnd: Int,
+        candidatesStart: Int, candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+
+        if (mIsInternalSelectionUpdate) {
+            // Even if internal, if the selection moved to 0,0, it might be a clear event
+            if (newSelStart != 0 || newSelEnd != 0) {
+                return
+            }
+        }
+
+        // Notify React Native about selection change
+        try {
+            val reactContext = mReactInstanceManager?.currentReactContext
+            if (reactContext != null) {
+                reactContext
+                    .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    .emit("onSelectionChange", null)
+            }
+        } catch (e: Exception) {
+        }
+    }
+
+    override fun onFinishInput() {
+        super.onFinishInput()
+        try {
+            val reactContext = mReactInstanceManager?.currentReactContext
+            if (reactContext != null) {
+                reactContext
+                    .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    .emit("onFinishComposing", null)
+            }
+        } catch (e: Exception) {
+        }
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -145,7 +199,12 @@ class HanulIME : InputMethodService() {
 
     fun setComposingText(text: String) {
         val ic = currentInputConnection
+        mIsInternalSelectionUpdate = true
         ic?.setComposingText(text, 1)
+        // Keep the flag true for a short time to catch asynchronous onUpdateSelection
+        Handler(Looper.getMainLooper()).postDelayed({
+            mIsInternalSelectionUpdate = false
+        }, 50)
     }
 
     fun finishComposingText() {
@@ -168,7 +227,7 @@ class HanulIME : InputMethodService() {
         val extracted = ic.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0) ?: return
         val selectionStart = extracted.selectionStart
         val selectionEnd = extracted.selectionEnd
-        
+
         // Only move if it's a cursor (not a selection range)
         if (selectionStart == selectionEnd) {
             val newPos = (selectionStart + offset).coerceIn(0, extracted.text.length)

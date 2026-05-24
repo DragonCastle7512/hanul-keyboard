@@ -19,7 +19,7 @@ export const consonantCycles: { [key: string]: string[] } = {
 // This maps sequences of ㅣ(1), ·(2), ㅡ(3) to standard Hangeul vowels
 const vowelSequences: { [key: string]: string } = {
   '1': 'ㅣ',
-  '2': '·', // Temporary state
+  '2': '·',
   '3': 'ㅡ',
   '12': 'ㅏ',
   '122': 'ㅑ',
@@ -38,7 +38,7 @@ const vowelSequences: { [key: string]: string } = {
   '2312': 'ㅘ',
   '23121': 'ㅙ',
   '321': 'ㅟ',
-  '3221': 'ㅝ', // This might need adjustment
+  '3221': 'ㅝ',
   '32211': 'ㅞ',
 };
 
