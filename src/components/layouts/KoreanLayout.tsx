@@ -12,7 +12,7 @@ interface KoreanLayoutProps {
   onBackspacePressOut: () => void;
 }
 
-const KoreanLayout: React.FC<KoreanLayoutProps> = ({
+const KoreanLayout: React.FC<KoreanLayoutProps> = React.memo(({
   onPress,
   onSetMode,
   onBackspacePressIn,
@@ -92,6 +92,6 @@ const KoreanLayout: React.FC<KoreanLayoutProps> = ({
       </View>
     </>
   );
-};
+});
 
 export default KoreanLayout;

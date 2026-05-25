@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -20,9 +20,10 @@ interface HanulKeyboardProps {
   shiftState: number;
 }
 
-const HanulKeyboard = React.memo(({ onPress, mode, onSetMode, onOpenSettings, shiftState }: HanulKeyboardProps) => {
+const HanulKeyboard = React.memo(({ onPress, mode, onModeChange, onSetMode, onOpenSettings, shiftState }: HanulKeyboardProps) => {
   const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
   const { colors } = useTheme();
+
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -54,8 +55,8 @@ const HanulKeyboard = React.memo(({ onPress, mode, onSetMode, onOpenSettings, sh
     }
   };
 
-  const onBackspacePressIn = () => startRepeat('Backspace');
-  const onBackspacePressOut = () => stopRepeat();
+  const onBackspacePressIn = useCallback(() => startRepeat('Backspace'), [onPress]);
+  const onBackspacePressOut = useCallback(() => stopRepeat(), []);
 
   const renderFunctionBar = () => (
     <View style={[styles.functionBar, { backgroundColor: colors.functionBarBackground, borderBottomColor: colors.separator }]}>
@@ -68,27 +69,33 @@ const HanulKeyboard = React.memo(({ onPress, mode, onSetMode, onOpenSettings, sh
     </View>
   );
 
-  const renderLayout = () => {
-    const layoutProps = {
-      onPress,
-      onSetMode,
-      onBackspacePressIn,
-      onBackspacePressOut,
-    };
+  const layoutProps = useMemo(() => ({
+    onPress,
+    onSetMode,
+    onBackspacePressIn,
+    onBackspacePressOut,
+  }), [onPress, onSetMode, onBackspacePressIn, onBackspacePressOut]);
 
-    switch (mode) {
-      case 'ko':
-        return <KoreanLayout {...layoutProps} />;
-      case 'en':
-        return <EnglishLayout {...layoutProps} shiftState={shiftState} />;
-      case 'num':
-        return <NumericLayout {...layoutProps} />;
-      case 'sym1':
-      case 'sym2':
-        return <SymbolLayout {...layoutProps} mode={mode} />;
-      default:
-        return <KoreanLayout {...layoutProps} />;
-    }
+  const renderLayout = () => {
+    return (
+      <View>
+        <View style={{ display: mode === 'ko' ? 'flex' : 'none' }}>
+          <KoreanLayout {...layoutProps} />
+        </View>
+        <View style={{ display: mode === 'en' ? 'flex' : 'none' }}>
+          <EnglishLayout {...layoutProps} shiftState={shiftState} />
+        </View>
+        <View style={{ display: mode === 'num' ? 'flex' : 'none' }}>
+          <NumericLayout {...layoutProps} />
+        </View>
+        <View style={{ display: mode === 'sym1' ? 'flex' : 'none' }}>
+          <SymbolLayout {...layoutProps} mode="sym1" />
+        </View>
+        <View style={{ display: mode === 'sym2' ? 'flex' : 'none' }}>
+          <SymbolLayout {...layoutProps} mode="sym2" />
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -107,6 +114,9 @@ const styles = StyleSheet.create({
   container: {
     padding: BUTTON_MARGIN_VER,
     paddingBottom: 20,
+  },
+  layoutContainer: {
+    height: 255,
   },
   functionBar: {
     height: 40,

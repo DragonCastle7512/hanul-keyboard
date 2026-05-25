@@ -70,13 +70,13 @@ function AppContent(props: any) {
     }
   }, []);
 
-  const keyboardWrapperStyle = [
+  const keyboardWrapperStyle = useMemo(() => [
     styles.keyboardWrapper,
     { 
       backgroundColor: colors.background,
       paddingBottom: isIME ? Math.max(bottomInset, 10) : 40, 
     }
-  ];
+  ], [colors.background, isIME, bottomInset]);
 
   return (
     <View style={[styles.container, { backgroundColor: isIME ? 'transparent' : colors.background }]}>

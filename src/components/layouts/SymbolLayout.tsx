@@ -13,7 +13,7 @@ interface SymbolLayoutProps {
   onBackspacePressOut: () => void;
 }
 
-const SymbolLayout: React.FC<SymbolLayoutProps> = ({
+const SymbolLayout: React.FC<SymbolLayoutProps> = React.memo(({
   mode,
   onPress,
   onSetMode,
@@ -106,6 +106,6 @@ const SymbolLayout: React.FC<SymbolLayoutProps> = ({
       </View>
     </>
   );
-};
+});
 
 export default SymbolLayout;

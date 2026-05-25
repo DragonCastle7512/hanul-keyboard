@@ -13,7 +13,7 @@ interface EnglishLayoutProps {
   shiftState: number;
 }
 
-const EnglishLayout: React.FC<EnglishLayoutProps> = ({
+const EnglishLayout: React.FC<EnglishLayoutProps> = React.memo(({
   onPress,
   onSetMode,
   onBackspacePressIn,
@@ -129,6 +129,6 @@ const EnglishLayout: React.FC<EnglishLayoutProps> = ({
       </View>
     </>
   );
-};
+});
 
 export default EnglishLayout;

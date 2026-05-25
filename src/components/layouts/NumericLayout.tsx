@@ -12,7 +12,7 @@ interface NumericLayoutProps {
   onBackspacePressOut: () => void;
 }
 
-const NumericLayout: React.FC<NumericLayoutProps> = ({
+const NumericLayout: React.FC<NumericLayoutProps> = React.memo(({
   onPress,
   onSetMode,
   onBackspacePressIn,
@@ -96,6 +96,6 @@ const NumericLayout: React.FC<NumericLayoutProps> = ({
       </View>
     </>
   );
-};
+});
 
 export default NumericLayout;

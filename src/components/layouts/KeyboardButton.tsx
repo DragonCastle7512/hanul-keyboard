@@ -18,7 +18,7 @@ export const BUTTON_HEIGHT = 48;
 export const BUTTON_MARGIN_VER = 3;
 export const BUTTON_MARGIN_HOZ = 2;
 
-const KeyboardButton: React.FC<KeyboardButtonProps> = ({
+const KeyboardButton: React.FC<KeyboardButtonProps> = React.memo(({
   label,
   value,
   flex = 1,
@@ -65,7 +65,7 @@ const KeyboardButton: React.FC<KeyboardButtonProps> = ({
       )}
     </TouchableOpacity>
   );
-};
+});
 
 export const styles = StyleSheet.create({
   button: {
