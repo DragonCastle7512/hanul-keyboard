@@ -5,8 +5,11 @@ describe('한글 조합 로직 (assembleHangeul)', () => {
     expect(assembleHangeul(['ㄱ', 'ㅏ'])).toBe('가');
   });
 
-  test('쌍자음 및 받침이 있는 글자를 조합해야 한다', () => {
+  test("합성이 올바르게 이루어져야 한다", () => {
     expect(assembleHangeul(['ㅃ', 'ㅡ', '·', '·', 'ㅣ', 'ㅣ', 'ㄹ', 'ㅂ'])).toBe('쀏');
+    expect(assembleHangeul(['ㅇ', 'ㅣ', '·', 'ㄴ', 'ㅎ'])).toBe('않');
+    expect(assembleHangeul(['ㅇ', 'ㅣ', '·', 'ㄴ', 'ㅈ'])).toBe('앉');
+    expect(assembleHangeul(['ㅇ', 'ㅣ', '·', 'ㄴ', 'ㅅ'])).toBe('안ㅅ');
   });
 
   test('연속 입력 시 천지인 결합 법칙을 따라야 한다 (하눌)', () => {

@@ -151,6 +151,40 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
       expect(IMEModule.finishComposingText).toHaveBeenCalled();
       expect(IMEModule.moveCursorLeft).toHaveBeenCalled();
     });
+
+    test("복잡한 받침을 정확하게 처리해야 한다", () => {
+      manager.handlePress('ㅇㅁ'); 
+      manager.handlePress('ㅣ');
+      manager.handlePress('·'); 
+      manager.handlePress('ㄴㄹ');
+      manager.handlePress('ㅅㅎ'); 
+      manager.handlePress('ㅅㅎ'); // 않
+      expect(getIMEText()).toBe('않');
+      
+      manager.handlePress('ㅂㅍ'); 
+      manager.handlePress('ㅂㅍ');
+      manager.handlePress('ㅂㅍ');
+      manager.handlePress('ㅡ');
+      manager.handlePress('·');
+      manager.handlePress('·'); 
+      manager.handlePress('ㅣ');
+      manager.handlePress('ㅣ');  
+      manager.handlePress('ㄴㄹ');
+      manager.handlePress('ㄴㄹ');
+      manager.handlePress('ㅂㅍ'); // 쀏
+      expect(getIMEText()).toBe('않쀏');
+
+      manager.handlePress('ㅅㅎ');
+      manager.handlePress('ㅅㅎ');
+      manager.handlePress('ㅅㅎ');
+      manager.handlePress('ㅣ');
+      manager.handlePress('·'); 
+      manager.handlePress('·'); 
+      manager.handlePress('ㅣ');
+      manager.handlePress('ㄴㄹ');
+      manager.handlePress('ㅈㅊ'); // 썑
+      expect(getIMEText()).toBe('않쀏썑');
+    });
   });
 
   describe('영어 및 대소문자 전환 (English & Shift Cycle - IME 환경)', () => {

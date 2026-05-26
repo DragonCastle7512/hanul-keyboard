@@ -118,11 +118,11 @@ export class KeyboardStateManager {
     if (!IMEModule) return;
     const newComposing = assembleHangeul(this.composingJamos);
     
-    const isCheonjiinPrimitive = (char: string) => char === 'ㅣ' || char === '·' || char === 'ㅡ';
+    const isKorean = (char: string) => /^[ㄱ-ㅎㅏ-ㅣ·]$/.test(char);
     
     if (newComposing.length > 1) {
         const remaining = newComposing.slice(-1);
-        if (isCheonjiinPrimitive(remaining)) {
+        if (isKorean(remaining)) {
             IMEModule.setComposingText(newComposing);
         } else {
             const committed = newComposing.slice(0, -1);
