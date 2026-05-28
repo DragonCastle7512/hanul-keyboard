@@ -15,8 +15,6 @@ export const consonantCycles: { [key: string]: string[] } = {
   '@/': ['@', '/'],
 };
 
-// Vowel mapping for Cheonjiin
-// This maps sequences of ㅣ(1), ·(2), ㅡ(3) to standard Hangeul vowels
 const vowelSequences: { [key: string]: string } = {
   '1': 'ㅣ',
   '2': '·',
@@ -42,11 +40,14 @@ const vowelSequences: { [key: string]: string } = {
   '32211': 'ㅞ',
 };
 
-// Note: Cheonjiin logic can be tricky. A better way is to handle combinations of standard vowels.
-// But for now, let's stick to a simpler approach for the prototype.
+const reverseVowelSequences: { [key: string]: string } = {};
+for (const key in vowelSequences) {
+  if (vowelSequences[key] !== '·') { 
+    reverseVowelSequences[vowelSequences[key]] = key;
+  }
+}
 
 export function assembleHangeul(jamos: string[]): string {
-  // We need to preprocess Cheonjiin dots
   const processedJamos = processVowels(jamos);
   return Hangul.assemble(processedJamos);
 }
@@ -54,16 +55,23 @@ export function assembleHangeul(jamos: string[]): string {
 function processVowels(jamos: string[]): string[] {
   const result: string[] = [];
   const isCheonjiinVowel = (char: string) => char === 'ㅣ' || char === '·' || char === 'ㅡ';
-  const toCode = (char: string) => (char === 'ㅣ' ? '1' : char === '·' ? '2' : '3');
-  let i = 0;
+  const isVowel = (char: string) => isCheonjiinVowel(char) || !!reverseVowelSequences[char];
+  
+  const getCode = (char: string) => {
+    if (char === 'ㅣ') return '1';
+    if (char === '·') return '2';
+    if (char === 'ㅡ') return '3';
+    return reverseVowelSequences[char] || '';
+  };
 
+  let i = 0;
   while (i < jamos.length) {
     const char = jamos[i];
-    if (isCheonjiinVowel(char)) {
+    if (isVowel(char)) {
       let j = i;
       let runCode = '';
-      while (j < jamos.length && isCheonjiinVowel(jamos[j])) {
-        runCode += toCode(jamos[j]);
+      while (j < jamos.length && isVowel(jamos[j])) {
+        runCode += getCode(jamos[j]);
         j++;
       }
 
@@ -81,8 +89,9 @@ function processVowels(jamos: string[]): string[] {
           }
         }
         if (!matched) {
-          const fallbackChar = runCode[cursor] === '1' ? 'ㅣ' : runCode[cursor] === '2' ? '·' : 'ㅡ';
-          result.push(fallbackChar);
+          const fallbackCode = runCode[cursor];
+          const fallbackChar = fallbackCode === '1' ? 'ㅣ' : fallbackCode === '2' ? '·' : fallbackCode === '3' ? 'ㅡ' : '';
+          if (fallbackChar) result.push(fallbackChar);
           cursor += 1;
         }
       }
