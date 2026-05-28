@@ -152,6 +152,18 @@ describe('KeyboardStateManager (키보드 상태 관리자)', () => {
       expect(IMEModule.moveCursorLeft).toHaveBeenCalled();
     });
 
+    test('연속적인 모음 조합의 경우에도 정상적으로 이루어져야한다.', () => {
+      manager.handlePress('ㅇㅁ');
+      manager.handlePress('·');
+      manager.handlePress('ㅣ');
+      manager.handlePress('ㅣ');
+      manager.handlePress('ㄱㅋ');
+      manager.handlePress('·');
+      manager.handlePress('ㅣ');
+      manager.handlePress('ㅣ');
+      expect(getIMEText()).toBe('에게');
+    });
+
     test("복잡한 받침을 정확하게 처리해야 한다", () => {
       manager.handlePress('ㅇㅁ'); 
       manager.handlePress('ㅣ');

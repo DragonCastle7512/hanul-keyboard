@@ -28,4 +28,8 @@ describe('한글 조합 로직 (assembleHangeul)', () => {
     expect(assembleHangeul(['ㅡ', 'ㅣ'])).toBe('ㅢ');
     expect(assembleHangeul(['ㅣ', '·', '·', 'ㅣ'])).toBe('ㅒ');
   });
+
+  test('ㅔㅔ 연속 입력 시 올바르게 조합되어야 한다', () => {
+    expect(assembleHangeul(['·', 'ㅣ', 'ㅣ', '·', 'ㅣ', 'ㅣ'])).toBe('ㅔㅔ');
+  });
 });
