@@ -15,13 +15,14 @@ export class KeyboardStateManager {
   private shiftState: number = 0; // 0: lower, 1: upper, 2: capslock
   private CYCLE_TIMEOUT = 1000;
   private isIME: boolean = false;
+  private cursorIndex: number = 0;
 
-  constructor(onUpdate: (text: string, shiftState: number) => void, isIME: boolean = false) {
+  constructor(onUpdate: (text: string, shiftState: number, cursorIndex: number) => void, isIME: boolean = false) {
     this.onUpdate = onUpdate;
     this.isIME = isIME;
   }
 
-  private onUpdate: (text: string, shiftState: number) => void;
+  private onUpdate: (text: string, shiftState: number, cursorIndex: number) => void;
 
   public handlePress(button: string) {
     const now = Date.now();
@@ -37,7 +38,7 @@ export class KeyboardStateManager {
 
     this.lastButton = button;
     this.lastTimestamp = now;
-    this.onUpdate(this.getText(), this.shiftState);
+    this.onUpdate(this.getText(), this.shiftState, this.cursorIndex + assembleHangeul(this.composingJamos).length);
   }
 
   private handleKorean(button: string, isSameButton: boolean) {
@@ -87,7 +88,12 @@ export class KeyboardStateManager {
     } else if (button === 'Space') {
       this.finalize();
       if (this.isIME && IMEModule) IMEModule.sendSpace();
-      else this.fullText += ' ';
+      else {
+        const leftText = this.fullText.slice(0, this.cursorIndex);
+        const rightText = this.fullText.slice(this.cursorIndex);
+        this.fullText = leftText + ' ' + rightText;
+        this.cursorIndex += 1;
+      }
     } else if (button === 'Backspace') {
       if (this.composingJamos.length > 0) {
         const oldComposing = assembleHangeul(this.composingJamos);
@@ -95,22 +101,64 @@ export class KeyboardStateManager {
         if (this.isIME) this.syncToIME(oldComposing);
       } else {
         if (this.isIME && IMEModule) IMEModule.deleteBackward();
-        else this.fullText = Array.from(this.fullText).slice(0, -1).join('');
+        else {
+          if (this.cursorIndex > 0) {
+            const leftText = this.fullText.substring(0, this.cursorIndex);
+            const rightText = this.fullText.substring(this.cursorIndex);
+            const leftChars = Array.from(leftText);
+            leftChars.pop();
+            const newLeftText = leftChars.join('');
+            this.fullText = newLeftText + rightText;
+            this.cursorIndex = newLeftText.length;
+          }
+        }
       }
     } else if (button === 'Enter') {
       this.finalize();
       if (this.isIME && IMEModule) IMEModule.sendEnter();
-      else this.fullText += '\n';
+      else {
+        const leftText = this.fullText.slice(0, this.cursorIndex);
+        const rightText = this.fullText.slice(this.cursorIndex);
+        this.fullText = leftText + '\n' + rightText;
+        this.cursorIndex += 1;
+      }
     } else if (button === 'Left') {
       this.finalize();
-      if (this.isIME && IMEModule) IMEModule.moveCursorLeft();
+      if (this.isIME && IMEModule) {
+        IMEModule.moveCursorLeft();
+      } else if (!this.isIME) {
+        if (this.cursorIndex > 0) {
+          const leftText = this.fullText.substring(0, this.cursorIndex);
+          const leftChars = Array.from(leftText);
+          if (leftChars.length > 0) {
+            leftChars.pop();
+            this.cursorIndex = leftChars.join('').length;
+          }
+        }
+      }
     } else if (button === 'Right') {
       this.finalize();
-      if (this.isIME && IMEModule) IMEModule.moveCursorRight();
+      if (this.isIME && IMEModule) {
+        IMEModule.moveCursorRight();
+      } else if (!this.isIME) {
+        if (this.cursorIndex < this.fullText.length) {
+          const rightText = this.fullText.substring(this.cursorIndex);
+          const rightChars = Array.from(rightText);
+          if (rightChars.length > 0) {
+            const firstChar = rightChars[0];
+            this.cursorIndex += firstChar.length;
+          }
+        }
+      }
     } else {
       this.finalize();
       if (this.isIME && IMEModule) IMEModule.commitText(button);
-      else this.fullText += button;
+      else {
+        const leftText = this.fullText.slice(0, this.cursorIndex);
+        const rightText = this.fullText.slice(this.cursorIndex);
+        this.fullText = leftText + button + rightText;
+        this.cursorIndex += button.length;
+      }
     }
   }
 
@@ -146,17 +194,59 @@ export class KeyboardStateManager {
   private handleOther(button: string) {
       if (button === 'Backspace') {
           if (this.isIME && IMEModule) IMEModule.deleteBackward();
-          else this.fullText = Array.from(this.fullText).slice(0, -1).join('');
+          else {
+              if (this.cursorIndex > 0) {
+                  const leftText = this.fullText.substring(0, this.cursorIndex);
+                  const rightText = this.fullText.substring(this.cursorIndex);
+                  const leftChars = Array.from(leftText);
+                  leftChars.pop();
+                  const newLeftText = leftChars.join('');
+                  this.fullText = newLeftText + rightText;
+                  this.cursorIndex = newLeftText.length;
+              }
+          }
       } else if (button === 'Space') {
           if (this.isIME && IMEModule) IMEModule.sendSpace();
-          else this.fullText += ' ';
+          else {
+              const leftText = this.fullText.slice(0, this.cursorIndex);
+              const rightText = this.fullText.slice(this.cursorIndex);
+              this.fullText = leftText + ' ' + rightText;
+              this.cursorIndex += 1;
+          }
       } else if (button === 'Enter') {
           if (this.isIME && IMEModule) IMEModule.sendEnter();
-          else this.fullText += '\n';
+          else {
+              const leftText = this.fullText.slice(0, this.cursorIndex);
+              const rightText = this.fullText.slice(this.cursorIndex);
+              this.fullText = leftText + '\n' + rightText;
+              this.cursorIndex += 1;
+          }
       } else if (button === 'Left') {
-          if (this.isIME && IMEModule) IMEModule.moveCursorLeft();
+          if (this.isIME && IMEModule) {
+              IMEModule.moveCursorLeft();
+          } else if (!this.isIME) {
+              if (this.cursorIndex > 0) {
+                  const leftText = this.fullText.substring(0, this.cursorIndex);
+                  const leftChars = Array.from(leftText);
+                  if (leftChars.length > 0) {
+                      leftChars.pop();
+                      this.cursorIndex = leftChars.join('').length;
+                  }
+              }
+          }
       } else if (button === 'Right') {
-          if (this.isIME && IMEModule) IMEModule.moveCursorRight();
+          if (this.isIME && IMEModule) {
+              IMEModule.moveCursorRight();
+          } else if (!this.isIME) {
+              if (this.cursorIndex < this.fullText.length) {
+                  const rightText = this.fullText.substring(this.cursorIndex);
+                  const rightChars = Array.from(rightText);
+                  if (rightChars.length > 0) {
+                      const firstChar = rightChars[0];
+                      this.cursorIndex += firstChar.length;
+                  }
+              }
+          }
       } else {
           let textToCommit = button;
           const isLetter = /^[a-z]$/i.test(button);
@@ -169,7 +259,12 @@ export class KeyboardStateManager {
           }
 
           if (this.isIME && IMEModule) IMEModule.commitText(textToCommit);
-          else this.fullText += textToCommit;
+          else {
+              const leftText = this.fullText.slice(0, this.cursorIndex);
+              const rightText = this.fullText.slice(this.cursorIndex);
+              this.fullText = leftText + textToCommit + rightText;
+              this.cursorIndex += textToCommit.length;
+          }
       }
   }
 
@@ -179,7 +274,10 @@ export class KeyboardStateManager {
       if (this.isIME && IMEModule && typeof IMEModule.finishComposingText === 'function') {
           IMEModule.finishComposingText();
       } else if (!this.isIME) {
-          this.fullText += composed;
+          const leftText = this.fullText.slice(0, this.cursorIndex);
+          const rightText = this.fullText.slice(this.cursorIndex);
+          this.fullText = leftText + composed + rightText;
+          this.cursorIndex += composed.length;
       }
       this.composingJamos = [];
     }
@@ -187,7 +285,9 @@ export class KeyboardStateManager {
 
   public getText(): string {
     const composingText = assembleHangeul(this.composingJamos);
-    return this.fullText + composingText;
+    const leftText = this.fullText.slice(0, this.cursorIndex);
+    const rightText = this.fullText.slice(this.cursorIndex);
+    return leftText + composingText + rightText;
   }
 
   public setMode(mode: KeyboardMode) {
@@ -208,6 +308,7 @@ export class KeyboardStateManager {
     this.composingJamos = [];
     this.lastButton = null;
     this.lastTimestamp = 0;
-    this.onUpdate('', this.shiftState);
+    this.cursorIndex = 0;
+    this.onUpdate('', this.shiftState, 0);
   }
 }

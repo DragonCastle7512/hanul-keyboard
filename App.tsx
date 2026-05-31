@@ -11,14 +11,16 @@ function AppContent(props: any) {
   const bottomInset = Number(props?.bottomInset ?? props?.exp?.initialProps?.bottomInset ?? 0);
   
   const [displayText, setDisplayText] = useState('');
+  const [cursorIndex, setCursorIndex] = useState(0);
   const [mode, setMode] = useState<KeyboardMode>('ko');
   const [shiftState, setShiftState] = useState(0);
   const { themeMode, setThemeMode, colors } = useTheme();
 
   const stateManager = useMemo(() => {
-    return new KeyboardStateManager((text, sState) => {
+    return new KeyboardStateManager((text, sState, cIndex) => {
       if (!isIME) {
         setDisplayText(text);
+        setCursorIndex(cIndex);
       }
       setShiftState(sState);
     }, isIME);
@@ -86,8 +88,9 @@ function AppContent(props: any) {
         <SafeAreaView style={styles.appArea}>
           <View style={[styles.displayArea, { backgroundColor: themeMode === 'black' ? '#111' : '#fff' }]}>
             <Text style={[styles.displayText, { color: themeMode === 'black' ? '#fff' : '#000' }]} numberOfLines={10}>
-              {displayText}
+              {displayText.slice(0, cursorIndex)}
               <Text style={styles.cursor}>|</Text>
+              {displayText.slice(cursorIndex)}
             </Text>
           </View>
         </SafeAreaView>
