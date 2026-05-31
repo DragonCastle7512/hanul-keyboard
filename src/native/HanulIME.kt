@@ -49,6 +49,13 @@ class HanulIME : InputMethodService() {
         return heightPx / density
     }
 
+    private fun getTotalKeyboardHeightPx(): Int {
+        val scale = resources.displayMetrics.density
+        val keyboardHeightPx = (320 * scale + 0.5f).toInt()
+        val navigationBarHeightPx = getNavigationBarHeightPx()
+        return keyboardHeightPx + navigationBarHeightPx
+    }
+
     override fun onCreate() {
         super.onCreate()
         currentInstance = this
@@ -62,12 +69,13 @@ class HanulIME : InputMethodService() {
     }
 
     override fun onCreateInputView(): View {
+        val totalKeyboardHeightPx = getTotalKeyboardHeightPx()
         mContainer = FrameLayout(this)
         mContainer?.setBackgroundColor(Color.TRANSPARENT)
 
         mContainer?.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            totalKeyboardHeightPx
         )
 
         try {
@@ -91,7 +99,7 @@ class HanulIME : InputMethodService() {
 
             mContainer?.addView(mReactRootView, FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                totalKeyboardHeightPx
             ))
         } catch (e: Exception) {
         }
@@ -107,11 +115,7 @@ class HanulIME : InputMethodService() {
         val totalWidth = inputView.width
         if (totalHeight <= 0) return
 
-        val scale = resources.displayMetrics.density
-        val keyboardHeightPx = (320 * scale + 0.5f).toInt()
-        val navigationBarHeightPx = getNavigationBarHeightPx()
-        val totalKeyboardHeightPx = keyboardHeightPx + navigationBarHeightPx
-
+        val totalKeyboardHeightPx = getTotalKeyboardHeightPx()
         val top = (totalHeight - totalKeyboardHeightPx).coerceAtLeast(0)
 
         outInsets.contentTopInsets = top
@@ -138,6 +142,25 @@ class HanulIME : InputMethodService() {
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         mReactInstanceManager?.onHostResume(null)
+        try {
+            val root = mReactRootView
+            val container = mContainer
+            val totalKeyboardHeightPx = getTotalKeyboardHeightPx()
+            if (root != null && container != null) {
+                (root.parent as? ViewGroup)?.removeView(root)
+                container.addView(root, FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    totalKeyboardHeightPx
+                ))
+                container.post {
+                    container.requestLayout()
+                    container.invalidate()
+                    root.requestLayout()
+                    root.invalidate()
+                }
+            }
+        } catch (e: Exception) {
+        }
     }
 
     override fun onUpdateSelection(

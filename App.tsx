@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, NativeModules, TouchableOpacity, SafeAreaView, StatusBar, DeviceEventEmitter } from 'react-native';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, NativeModules, TouchableOpacity, SafeAreaView, StatusBar, DeviceEventEmitter, Animated, Easing } from 'react-native';
 import HanulKeyboard from './src/components/HanulKeyboard';
 import { KeyboardStateManager, KeyboardMode } from './src/logic/KeyboardStateManager';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -26,6 +26,25 @@ function AppContent(props: any) {
     }, isIME);
   }, [isIME]);
 
+  const translateY = useRef(new Animated.Value(isIME ? 360 : 0)).current;
+
+  const runSlideUpAnimation = useCallback(() => {
+    if (!isIME) return;
+    translateY.setValue(360);
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 250,
+      easing: Easing.bezier(0.1, 0.9, 0.2, 1.0),
+      useNativeDriver: true,
+    }).start();
+  }, [isIME, translateY]);
+
+  useEffect(() => {
+    if (isIME) {
+      runSlideUpAnimation();
+    }
+  }, [isIME, runSlideUpAnimation]);
+
   useEffect(() => {
     if (isIME) {
       const subSelection = DeviceEventEmitter.addListener('onSelectionChange', () => {
@@ -36,6 +55,7 @@ function AppContent(props: any) {
       });
       const subReset = DeviceEventEmitter.addListener('onResetState', () => {
         stateManager.reset();
+        runSlideUpAnimation();
       });
       return () => {
         subSelection.remove();
@@ -43,7 +63,7 @@ function AppContent(props: any) {
         subReset.remove();
       };
     }
-  }, [isIME, stateManager]);
+  }, [isIME, stateManager, runSlideUpAnimation]);
 
   const handleKeyPress = useCallback((key: string) => {
     stateManager.handlePress(key);
@@ -96,7 +116,7 @@ function AppContent(props: any) {
         </SafeAreaView>
       ) : null}
 
-      <View style={keyboardWrapperStyle}>
+      <Animated.View style={[keyboardWrapperStyle, { transform: [{ translateY }] }]}>
         <HanulKeyboard 
           onPress={handleKeyPress} 
           mode={mode}
@@ -105,7 +125,7 @@ function AppContent(props: any) {
           onOpenSettings={openKeyboardSettings}
           shiftState={shiftState}
         />
-      </View>
+      </Animated.View>
     </View>
   );
 }
